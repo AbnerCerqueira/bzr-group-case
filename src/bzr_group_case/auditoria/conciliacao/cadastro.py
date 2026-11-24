@@ -80,6 +80,7 @@ def validar_cobertura_processos(
         origem=ORIGEM_CONCILIACAO_CADASTRO,
         validacao="Cobertura de processos (presença nas duas bases)",
         arquivo=f"{rotulo_tribunal} x {rotulo_hub}",
+        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -109,6 +110,7 @@ def validar_formato_chave_entre_bases(
         origem=ORIGEM_CONCILIACAO_CADASTRO,
         validacao="Formato do número do processo entre bases",
         arquivo=f"{rotulo_arquivo(caminho_tribunal)} x {rotulo_arquivo(caminho_hub)}",
+        severidade="BAIXA",
         evidencias=evidencias,
     )
 
@@ -148,6 +150,7 @@ def validar_ente_devedor_entre_bases(
         origem=ORIGEM_CONCILIACAO_CADASTRO,
         validacao="Ente devedor entre bases",
         arquivo=f"{rotulo_arquivo(caminho_tribunal)} x {rotulo_arquivo(caminho_hub)}",
+        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -188,6 +191,7 @@ def validar_valor_face_entre_bases(
         origem=ORIGEM_CONCILIACAO_CADASTRO,
         validacao="Valor de face entre bases",
         arquivo=f"{rotulo_arquivo(caminho_tribunal)} x {rotulo_arquivo(caminho_hub)}",
+        severidade="ALTA",
         evidencias=evidencias,
     )
 

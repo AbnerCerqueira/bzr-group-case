@@ -238,4 +238,10 @@ def test_formatar_relatorio_agrupa_todas_as_origens() -> None:
     assert f"Origem: {ORIGEM_ENUNCIADO}" in relatorio
     assert f"Origem: {ORIGEM_CONCILIACAO_CADASTRO}" in relatorio
     assert f"Origem: {ORIGEM_CONCILIACAO_APRESENTACOES}" in relatorio
-    assert "Resumo: 23 validação(ões) | 5 OK | 18 FALHA" in relatorio
+    assert "[FALHA | ALTA]" in relatorio
+    assert "[FALHA | MEDIA]" in relatorio
+    assert "[FALHA | BAIXA]" in relatorio
+    assert (
+        "Resumo: 23 validação(ões) | 5 OK | 18 FALHA "
+        "(ALTA: 12, MEDIA: 5, BAIXA: 1)" in relatorio
+    )

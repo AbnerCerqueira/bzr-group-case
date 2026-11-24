@@ -65,6 +65,7 @@ def validar_prazo_pagamento_hub(caminho_hub: Path) -> ResultadoValidacao:
         origem=ORIGEM_ENUNCIADO,
         validacao="Regra constitucional de prazo_pagamento (corte em 02/04, BRT)",
         arquivo=rotulo_arquivo(caminho_hub),
+        severidade="ALTA",
         evidencias=evidencias,
     )
 

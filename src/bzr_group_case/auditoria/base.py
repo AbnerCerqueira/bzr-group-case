@@ -4,12 +4,18 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 RAIZ_PROJETO = Path(__file__).resolve().parents[3]
 DIRETORIO_DADOS = RAIZ_PROJETO / "data"
 
 PADRAO_CNJ = re.compile(r"\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}", re.ASCII)
+
+# Critério de severidade (risco potencial da regra):
+# - ALTA : impacto financeiro direto, prazo legal errado ou bloqueio de leitura/carga
+# - MEDIA: inconsistência cadastral, contrato de campo ou divergência entre bases
+# - BAIXA: diferença de formatação contornável por normalização
+Severidade = Literal["ALTA", "MEDIA", "BAIXA"]
 
 
 @dataclass(frozen=True)
@@ -19,6 +25,7 @@ class ResultadoValidacao:
     origem: str
     validacao: str
     arquivo: str
+    severidade: Severidade
     evidencias: list[str]
 
     @property

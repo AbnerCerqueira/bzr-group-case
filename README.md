@@ -17,3 +17,13 @@ Para investigar o problema, optei por construir uma ferramenta determinística p
 As referências usadas como base para o script foram: as regras de contrato em [DOCUMENTACAO_TRIBUNAL.md](./docs/DOCUMENTACAO_TRIBUNAL.md), o fluxo operacional e regras de negócio em [ENUNCIADO.md](./docs/ENUNCIADO.md), e a modelagem interna do banco em [schema.sql](./schema.sql).
 
 Por isso, fiz um script de auditoria para identificar e visualizar essas inconsistências automaticamente, embasando o diagnóstico completo.
+
+### Critério de severidade
+
+Para facilitar a leitura e a priorização das evidências na auditoria, defini três níveis de severidade por regra ([base.py](./src/bzr_group_case/auditoria/base.py)):
+
+- **ALTA:** impacto financeiro direto, prazo legal incorreto ou bloqueio de leitura/carga dos arquivos.
+- **MEDIA:** inconsistência cadastral, quebra de contrato de campo ou divergência entre bases.
+- **BAIXA:** diferença de formatação contornável por normalização.
+
+A severidade no script classifica o risco potencial de cada regra; a priorização final e a relação entre causa e consequência ficam no diagnóstico.

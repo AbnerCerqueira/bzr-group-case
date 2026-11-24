@@ -86,6 +86,7 @@ def validar_estrutura_json(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="Estrutura: lista de objetos em JSON",
         arquivo=rotulo_arquivo(caminho),
+        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -126,6 +127,7 @@ def validar_evento_id_unico(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="evento_id: texto único",
         arquivo=rotulo_arquivo(caminho),
+        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -148,6 +150,7 @@ def validar_processo_cnj_json(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)",
         arquivo=rotulo_arquivo(caminho),
+        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -172,6 +175,7 @@ def validar_valor_numerico_json(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="valor: número",
         arquivo=rotulo_arquivo(caminho),
+        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -194,6 +198,7 @@ def validar_data_pagamento_iso(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="data_pagamento: formato AAAA-MM-DD",
         arquivo=rotulo_arquivo(caminho),
+        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -216,6 +221,7 @@ def validar_tipo_pagamento(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="tipo: sempre 'pagamento'",
         arquivo=rotulo_arquivo(caminho),
+        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -238,6 +244,7 @@ def validar_atualizado_em_iso(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_PAGAMENTOS,
         validacao="atualizado_em: data e hora válida",
         arquivo=rotulo_arquivo(caminho),
+        severidade="MEDIA",
         evidencias=evidencias,
     )
 

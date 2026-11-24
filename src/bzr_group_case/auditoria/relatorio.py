@@ -44,20 +44,26 @@ def formatar_relatorio(resultados: list[ResultadoValidacao]) -> str:
     for origem, itens in grupos.items():
         linhas.extend([f"Origem: {origem}", subseparador])
         for item in itens:
-            status = "OK" if item.ok else "FALHA"
-            linhas.append(f"  [{status}] {item.validacao}")
+            rotulo_status = "OK" if item.ok else f"FALHA | {item.severidade}"
+            linhas.append(f"  [{rotulo_status}] {item.validacao}")
             linhas.append(f"    Arquivo: {item.arquivo}")
             for evidencia in item.evidencias:
                 linhas.append(f"      - {evidencia}")
             linhas.append("")
 
     total = len(resultados)
-    total_ok = sum(1 for r in resultados if r.ok)
-    total_falha = total - total_ok
+    falhas = [r for r in resultados if not r.ok]
+    total_ok = total - len(falhas)
+    alta = sum(1 for r in falhas if r.severidade == "ALTA")
+    media = sum(1 for r in falhas if r.severidade == "MEDIA")
+    baixa = sum(1 for r in falhas if r.severidade == "BAIXA")
     linhas.extend(
         [
             separador,
-            f"Resumo: {total} validação(ões) | {total_ok} OK | {total_falha} FALHA",
+            (
+                f"Resumo: {total} validação(ões) | {total_ok} OK | "
+                f"{len(falhas)} FALHA (ALTA: {alta}, MEDIA: {media}, BAIXA: {baixa})"
+            ),
             separador,
         ]
     )
