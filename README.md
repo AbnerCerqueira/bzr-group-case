@@ -27,3 +27,9 @@ Para facilitar a leitura e a priorização das evidências na auditoria, defini 
 - **BAIXA:** diferença de formatação contornável por normalização.
 
 A severidade no script classifica o risco potencial de cada regra; a priorização final e a relação entre causa e consequência ficam no diagnóstico.
+
+### Visualização da auditoria
+
+Após rodar o script (`make audit-html`), posso visualizar os dados organizados e agrupados por origem das evidências para montar o diagnóstico — mapeando os principais problemas, o que é causa ou consequência e o impacto que isso traz para o negócio.
+
+![Visualização da auditoria](./assets/auditoria.gif)

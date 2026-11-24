@@ -1,4 +1,14 @@
-from bzr_group_case.auditoria import executar_auditoria, formatar_relatorio
+import json
+import re
+from pathlib import Path
+
+from bzr_group_case.auditoria import (
+    ResultadoValidacao,
+    executar_auditoria,
+    formatar_relatorio,
+    formatar_relatorio_html,
+    salvar_relatorio_html,
+)
 from bzr_group_case.auditoria.conciliacao import (
     ORIGEM_CONCILIACAO_APRESENTACOES,
     ORIGEM_CONCILIACAO_CADASTRO,
@@ -245,3 +255,40 @@ def test_formatar_relatorio_agrupa_todas_as_origens() -> None:
         "Resumo: 23 validação(ões) | 5 OK | 18 FALHA "
         "(ALTA: 12, MEDIA: 5, BAIXA: 1)" in relatorio
     )
+
+
+def test_formatar_e_salvar_relatorio_html(tmp_path: Path) -> None:
+    resultados = executar_auditoria()
+    html = formatar_relatorio_html(resultados)
+
+    assert html.lstrip().lower().startswith("<!doctype html>")
+    assert "__DATA__" not in html
+    assert html.count("</script>") == 1
+    embutido = re.search(r"const D = (.*?);\nconst R =", html, re.S)
+    assert embutido is not None
+    dados = json.loads(embutido.group(1))
+    assert dados["resumo"] == {
+        "total_validacoes": 23,
+        "ok": 5,
+        "falhas": 18,
+        "falhas_por_severidade": {"ALTA": 12, "MEDIA": 5, "BAIXA": 1},
+        "total_evidencias": sum(len(r.evidencias) for r in resultados),
+    }
+
+    destino = salvar_relatorio_html(resultados, tmp_path / "auditoria.html")
+    assert destino.read_text(encoding="utf-8") == html
+
+
+def test_formatar_relatorio_html_escapa_fechamento_de_script() -> None:
+    html = formatar_relatorio_html(
+        [
+            ResultadoValidacao(
+                origem="teste",
+                validacao="regra",
+                arquivo="data/teste.csv",
+                severidade="ALTA",
+                evidencias=["valor suspeito </script><script>alert(1)</script>"],
+            )
+        ]
+    )
+    assert html.count("</script>") == 1

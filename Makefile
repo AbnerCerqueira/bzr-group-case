@@ -1,9 +1,10 @@
-.PHONY: help sync audit lint format typecheck test check
+.PHONY: help sync audit audit-html lint format typecheck test check
 
 help:
 	@echo "Comandos disponíveis:"
 	@echo "  make sync       - Sincroniza dependências via uv"
-	@echo "  make audit      - Executa o script de auditoria dos arquivos"
+	@echo "  make audit      - Executa a auditoria no terminal"
+	@echo "  make audit-html - Gera a visualização da auditoria em docs/auditoria.html"
 	@echo "  make lint       - Verifica lint e formatação (ruff)"
 	@echo "  make format     - Formata e aplica correções automáticas (ruff)"
 	@echo "  make typecheck  - Verifica tipos estáticos (basedpyright)"
@@ -15,6 +16,9 @@ sync:
 
 audit:
 	uv run python -m bzr_group_case.auditoria
+
+audit-html:
+	uv run python -m bzr_group_case.auditoria --html
 
 lint:
 	uv run ruff check .

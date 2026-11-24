@@ -1,0 +1,189 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auditoria dos arquivos de precatórios</title><style>
+:root{
+  color-scheme:dark;
+  --background:#0a0a0b;
+  --foreground:#ececef;
+  --card:#121214;
+  --border:#26262a;
+  --secondary:#1b1b1f;
+  --muted-foreground:#a1a1aa;
+  --ring:#52525b;
+  --code-background:#18181b;
+  --destructive:#f04444;
+  --warning:#f59e0b;
+  --info:#3b82f6;
+  --success:#22c55e;
+  --radius:10px;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --alta:var(--destructive);
+  --media:var(--warning);
+  --baixa:var(--info);
+  --ok:var(--success);
+}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:920px;padding:24px 16px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:13.5px;line-height:1.45}
+.muted{color:var(--muted-foreground)}
+.intro{margin:0 0 14px}
+.intro h2{font-size:18px;margin:0 0 4px}
+.intro p{margin:0;font-size:13px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px}
+h3{font-size:14.5px;margin:0 0 2px}
+.sub{font-size:12.5px;margin:0 0 12px}
+.filtro{position:sticky;top:0;z-index:2}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:999px;padding:5px 12px;display:inline-flex;gap:6px;align-items:center}
+.chip:hover{background:var(--secondary)}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip .n{font-variant-numeric:tabular-nums;color:var(--muted-foreground)}
+.chip[aria-pressed=true]{border-color:var(--c,var(--foreground));background:color-mix(in srgb,var(--c,var(--foreground)) 18%,transparent);font-weight:600}
+.chip[aria-pressed=true] .n{color:var(--foreground)}
+.desc{font-size:12.5px;margin-top:8px;min-height:18px}
+.extra{display:flex;gap:14px;align-items:center;margin-top:8px;font-size:12.5px;flex-wrap:wrap}
+.extra label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.pill{display:inline-flex;gap:6px;align-items:center;background:var(--secondary);border-radius:999px;padding:2px 4px 2px 10px}
+.pill button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;padding:0 6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.kpi{margin:0}
+.kpi .v{font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:14px;font-weight:500;color:var(--muted-foreground)}
+.kpi .l{font-size:12.5px;margin-top:4px}
+.row{display:grid;grid-template-columns:210px 1fr 96px;gap:10px;align-items:center;padding:7px 6px;margin:0 -6px;border-radius:6px}
+.row.click{cursor:pointer}
+.row.click:hover{background:var(--secondary)}
+.row.sel{background:var(--secondary);outline:1px solid var(--ring)}
+.row.dim{opacity:.35}
+.row .nm{font-weight:600;font-size:13px}
+.row .nm small{display:block;font-weight:400;font-size:12px;color:var(--muted-foreground)}
+.bar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--foreground) 8%,transparent)}
+.bar span{display:block;height:100%}
+.num{text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+.num b{font-size:13px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.tag{font-size:10.5px;font-weight:700;padding:2px 0;border-radius:4px;text-align:center;letter-spacing:.02em;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+details{border-top:1px solid var(--border)}
+details:first-child{border-top:0}
+summary{list-style:none;display:grid;grid-template-columns:60px 1fr 100px 14px;gap:10px;align-items:center;padding:10px 0;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary .r{font-weight:600;font-size:13px}
+summary .r small{display:block;font-weight:400;font-size:12px;color:var(--muted-foreground)}
+summary .chev{transition:transform .15s;color:var(--muted-foreground)}
+details[open] summary .chev{transform:rotate(90deg)}
+.ev{margin:0 0 12px 70px;padding:10px 12px;background:var(--code-background);border:1px solid var(--border);border-radius:6px}
+.ev ol{margin:0;padding-left:18px;font-family:var(--font-mono);font-size:12px;color:#e5e7eb}
+.ev li{margin:4px 0;word-break:break-word}
+.ev .fonte{font-size:12px;margin-top:8px}
+.vazio{padding:18px 0;text-align:center}
+@media (max-width:560px){.kpis{grid-template-columns:1fr}.row{grid-template-columns:1fr 76px}.row .bar{grid-column:1/3;grid-row:2}.ev{margin-left:0}}
+</style></head><body>
+
+<div class="intro">
+  <h2>Auditoria de dados</h2>
+  <p class="muted">Conferência de tribunal.csv, hub.csv, pagamentos.json e apresentacoes.json contra o contrato, schema.sql e regra de prazo.</p>
+</div>
+
+<div class="card filtro">
+  <h3>Filtrar por criticidade</h3>
+  <div class="chips" id="chips" role="group" aria-label="Criticidade"></div>
+  <div class="desc muted" id="desc"></div>
+  <div class="extra"><label><input type="checkbox" id="mostrarOk"> Mostrar regras OK</label><span id="arqPill"></span></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="card">
+  <h3>Onde estão os problemas</h3>
+  <p class="sub muted">Ocorrências por arquivo (clique para filtrar a lista).</p>
+  <div id="arquivos"></div>
+  <div class="legend muted" id="lg1"></div>
+</div>
+
+<div class="card">
+  <h3>Tipo de problema</h3>
+  <p class="sub muted">Regras com falha agrupadas por origem.</p>
+  <div id="tipos"></div>
+</div>
+
+<div class="card">
+  <h3 id="tituloLista">Lista de problemas</h3>
+  <p class="sub muted">Ordenada por criticidade. Clique em uma regra para ver as evidências.</p>
+  <div id="lista"></div>
+</div>
+
+<script>
+const D = __DATA__;
+const R = D.resultados;
+const SEV=['ALTA','MEDIA','BAIXA'];
+const INFO={
+  ALTA:{nome:'Alta',cor:'var(--alta)',desc:'Impacto financeiro, prazo legal incorreto ou bloqueio de carga.'},
+  MEDIA:{nome:'Média',cor:'var(--media)',desc:'Inconsistência cadastral, contrato de campo ou divergência entre bases.'},
+  BAIXA:{nome:'Baixa',cor:'var(--baixa)',desc:'Diferença de formatação resolvida por normalização.'},
+  OK:{nome:'OK',cor:'var(--ok)'}
+};
+const ARQ={
+  'data/tribunal.csv':['tribunal.csv','Precatórios do tribunal'],
+  'data/pagamentos.json':['pagamentos.json','Eventos de pagamento'],
+  'data/hub.csv':['hub.csv','Base interna'],
+  'data/apresentacoes.json':['apresentacoes.json','Datas de apresentação'],
+};
+const nomeArq=a=>{if(ARQ[a])return ARQ[a];const p=a.split(' x ').map(x=>(ARQ[x]||[x.replace('data/','')])[0]);return [p.join(' × '),'Conciliação entre bases']};
+const tipo=o=>o.startsWith('docs/DOCUMENTACAO_TRIBUNAL')?['Fora do leiaute do tribunal','Formato diferente do documentado']
+  :o.startsWith('schema.sql')?['Incompatível com o banco','Restrição de schema.sql']
+  :o.startsWith('docs/ENUNCIADO')?['Prazo de pagamento errado','Corte constitucional em 02/04']
+  :o.startsWith('Conciliação')?['Divergência entre bases','Diferença entre arquivos']
+  :[o,''];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural=(n,s,p)=>`${n} ${n===1?s:p}`;
+const falhas=R.filter(r=>r.status==='FALHA');
+const st={sev:'TODAS',arq:null,ok:false};
+const passaSev=r=>st.sev==='TODAS'||r.severidade===st.sev;
+
+function chips(){
+  const op=[['TODAS','Todas',falhas.length,'var(--foreground)'],...SEV.map(s=>[s,INFO[s].nome,falhas.filter(r=>r.severidade===s).length,INFO[s].cor])];
+  document.getElementById('chips').innerHTML=op.map(([k,n,c,cor])=>`<button class="chip" style="--c:${cor}" aria-pressed="${st.sev===k}" data-k="${k}">${k!=='TODAS'?`<i style="background:${cor}"></i>`:''}${n}<span class="n">${c}</span></button>`).join('');
+  document.getElementById('desc').textContent=st.sev==='TODAS'?'Exibindo todas as falhas.':`${INFO[st.sev].nome}: ${INFO[st.sev].desc}`;
+  document.getElementById('arqPill').innerHTML=st.arq?`<span class="pill">Arquivo: <b>${esc(nomeArq(st.arq)[0])}</b><button id="limpaArq" title="Remover filtro de arquivo">✕</button></span>`:'';
+}
+function stack(c,t){return SEV.map(s=>c[s]?`<span title="${INFO[s].nome}: ${c[s]}" style="width:${c[s]/t*100}%;background:${INFO[s].cor}"></span>`:'').join('')}
+
+function render(){
+  chips();
+  const F=falhas.filter(passaSev);
+  const FA=F.filter(r=>!st.arq||r.arquivo===st.arq);
+  const regrasSev=R.filter(passaSev).filter(r=>!st.arq||r.arquivo===st.arq);
+  const occ=FA.reduce((a,r)=>a+r.total_evidencias,0);
+  const nArq=new Set(FA.map(r=>r.arquivo)).size;
+  const cor=st.sev==='TODAS'?'var(--alta)':INFO[st.sev].cor;
+  document.getElementById('kpis').innerHTML=[
+    [`${FA.length}<small> de ${regrasSev.length}</small>`,'regras com falha',cor],
+    [occ,'evidências encontradas','var(--foreground)'],
+    [nArq,nArq===1?'arquivo / comparação afetado':'arquivos / comparações afetados','var(--foreground)']
+  ].map(([v,l,c])=>`<div class="card kpi"><div class="v" style="color:${c}">${v}</div><div class="l muted">${l}</div></div>`).join('');
+
+  const porArq={};F.forEach(r=>{const x=(porArq[r.arquivo]??={ALTA:0,MEDIA:0,BAIXA:0,regras:0,t:0});x[r.severidade]+=r.total_evidencias;x.regras++;x.t+=r.total_evidencias});
+  const la=Object.entries(porArq).sort((a,b)=>b[1].t-a[1].t);const maxA=Math.max(1,...la.map(x=>x[1].t));
+  document.getElementById('arquivos').innerHTML=la.length?la.map(([a,c])=>{const [n,d]=nomeArq(a);
+    return `<div class="row click ${st.arq===a?'sel':st.arq?'dim':''}" data-arq="${esc(a)}" title="Clique para filtrar"><div class="nm">${esc(n)}<small>${esc(d)}</small></div><div><div class="bar" style="width:${c.t/maxA*100}%">${stack(c,c.t)}</div></div><div class="num"><b>${c.t}</b> evid.<br><span class="muted">${plural(c.regras,'regra','regras')}</span></div></div>`}).join(''):'<div class="vazio muted">Nenhuma falha para este filtro.</div>';
+  document.getElementById('lg1').innerHTML=SEV.filter(s=>st.sev==='TODAS'||s===st.sev).map(s=>`<span><i style="background:${INFO[s].cor}"></i>${INFO[s].nome}</span>`).join('');
+
+  const porTipo={};FA.forEach(r=>{const [n,d]=tipo(r.origem);const x=(porTipo[n]??={d,ALTA:0,MEDIA:0,BAIXA:0,t:0,occ:0});x[r.severidade]++;x.t++;x.occ+=r.total_evidencias});
+  const lt=Object.entries(porTipo).sort((a,b)=>b[1].t-a[1].t);const maxT=Math.max(1,...lt.map(x=>x[1].t));
+  document.getElementById('tipos').innerHTML=lt.length?lt.map(([n,c])=>`<div class="row"><div class="nm">${esc(n)}<small>${esc(c.d)}</small></div><div><div class="bar" style="width:${c.t/maxT*100}%">${stack(c,c.t)}</div></div><div class="num"><b>${plural(c.t,'regra','regras')}</b><br><span class="muted">${c.occ} evid.</span></div></div>`).join(''):'<div class="vazio muted">Nenhuma falha para este filtro.</div>';
+
+  const ord=r=>r.status==='OK'?3:SEV.indexOf(r.severidade);
+  const L=[...FA,...(st.ok?regrasSev.filter(r=>r.status==='OK'):[])].sort((a,b)=>ord(a)-ord(b)||b.total_evidencias-a.total_evidencias);
+  document.getElementById('tituloLista').textContent=`Lista de problemas (${FA.length})`;
+  document.getElementById('lista').innerHTML=L.length?L.map(r=>{const k=r.status==='OK'?'OK':r.severidade;const [n]=nomeArq(r.arquivo);const [t]=tipo(r.origem);
+    return `<details><summary><div class="tag" style="--c:${INFO[k].cor}">${k==='OK'?'OK':INFO[k].nome.toUpperCase()}</div><div class="r">${esc(r.validacao)}<small>${esc(n)} · ${esc(t)}</small></div><div class="num">${r.status==='OK'?'<span class="muted">OK</span>':`<b>${r.total_evidencias}</b> ${r.total_evidencias===1?'evidência':'evidências'}`}</div><div class="chev">›</div></summary>
+    <div class="ev">${r.evidencias.length?`<ol>${r.evidencias.map(e=>`<li>${esc(e)}</li>`).join('')}</ol>`:'<span class="muted">Nenhuma falha encontrada.</span>'}<div class="fonte muted">Origem: ${esc(r.origem)}</div></div></details>`}).join(''):'<div class="vazio muted">Nenhum problema para este filtro.</div>';
+}
+
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.chip');if(c){st.sev=c.dataset.k;render();return}
+  if(e.target.closest('#limpaArq')){st.arq=null;render();return}
+  const a=e.target.closest('.row.click');if(a){st.arq=st.arq===a.dataset.arq?null:a.dataset.arq;render()}
+});
+document.getElementById('mostrarOk').addEventListener('change',e=>{st.ok=e.target.checked;render()});
+render();
+</script></body></html>
