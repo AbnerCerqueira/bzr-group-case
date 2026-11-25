@@ -33,3 +33,12 @@ A severidade no script classifica o risco potencial de cada regra; a priorizaç�
 Após rodar o script (`make audit-html`), posso visualizar os dados organizados e agrupados por origem das evidências para montar o diagnóstico — mapeando os principais problemas, o que é causa ou consequência e o impacto que isso traz para o negócio.
 
 ![Visualização da auditoria](./assets/auditoria.gif)
+
+## Diagnóstico
+
+Com as evidências da auditoria em mãos, escrevi o [DIAGNOSTICO.md](./docs/DIAGNOSTICO.md) pensando em quem precisa entender rápido o que está acontecendo e decidir o que corrigir primeiro:
+
+- **Agrupamento por problema:** em vez de listar as 18 falhas técnicas soltas, consolidei os achados em 4 grandes problemas ordenados do mais grave para o menos grave, deixando claro o impacto para o negócio e a cadeia de causa e consequência entre eles.
+- **Evidências sem atrapalhar a leitura:** cada problema traz a explicação em texto direto e mantém as referências exatas (arquivo, registro e linha) em blocos expansíveis, além do apontamento para `make audit` e `make audit-html` para reproduzir todas as validações.
+- **Ponte para a limpeza e prevenção:** a partir de cada problema levantado, já organizei o que precisa ser tratado na etapa de limpeza dos dados e o que mudar no processo operacional, no script de importação e no banco de dados para evitar que os erros voltem.
+- **Dúvidas antes de produção:** separei o que precisa ser confirmado com o tribunal e com a operação nos pontos em que os dados sozinhos não bastam para tomar uma decisão segura (como divergências de valor de face, ente devedor e eventos incompletos).
