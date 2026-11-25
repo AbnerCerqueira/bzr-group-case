@@ -54,7 +54,7 @@ def formatar_relatorio(resultados: list[ResultadoValidacao]) -> str:
     for origem, itens in grupos.items():
         linhas.extend([f"Origem: {origem}", subseparador])
         for item in itens:
-            rotulo_status = "OK" if item.ok else f"FALHA | {item.severidade}"
+            rotulo_status = "OK" if item.ok else "FALHA"
             linhas.append(f"  [{rotulo_status}] {item.validacao}")
             linhas.append(f"    Arquivo: {item.arquivo}")
             for evidencia in item.evidencias:
@@ -64,16 +64,10 @@ def formatar_relatorio(resultados: list[ResultadoValidacao]) -> str:
     total = len(resultados)
     falhas = [r for r in resultados if not r.ok]
     total_ok = total - len(falhas)
-    alta = sum(1 for r in falhas if r.severidade == "ALTA")
-    media = sum(1 for r in falhas if r.severidade == "MEDIA")
-    baixa = sum(1 for r in falhas if r.severidade == "BAIXA")
     linhas.extend(
         [
             separador,
-            (
-                f"Resumo: {total} validação(ões) | {total_ok} OK | "
-                f"{len(falhas)} FALHA (ALTA: {alta}, MEDIA: {media}, BAIXA: {baixa})"
-            ),
+            f"Resumo: {total} validação(ões) | {total_ok} OK | {len(falhas)} FALHA",
             separador,
         ]
     )
@@ -87,10 +81,6 @@ def _serializar_dados(resultados: list[ResultadoValidacao]) -> dict[str, Any]:
             "total_validacoes": len(resultados),
             "ok": len(resultados) - len(falhas),
             "falhas": len(falhas),
-            "falhas_por_severidade": {
-                severidade: sum(1 for r in falhas if r.severidade == severidade)
-                for severidade in ("ALTA", "MEDIA", "BAIXA")
-            },
             "total_evidencias": sum(len(r.evidencias) for r in resultados),
         },
         "resultados": [
@@ -98,7 +88,6 @@ def _serializar_dados(resultados: list[ResultadoValidacao]) -> dict[str, Any]:
                 "origem": r.origem,
                 "validacao": r.validacao,
                 "arquivo": r.arquivo,
-                "severidade": r.severidade,
                 "status": "OK" if r.ok else "FALHA",
                 "total_evidencias": len(r.evidencias),
                 "evidencias": list(r.evidencias),

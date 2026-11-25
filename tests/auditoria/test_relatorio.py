@@ -248,13 +248,10 @@ def test_formatar_relatorio_agrupa_todas_as_origens() -> None:
     assert f"Origem: {ORIGEM_ENUNCIADO}" in relatorio
     assert f"Origem: {ORIGEM_CONCILIACAO_CADASTRO}" in relatorio
     assert f"Origem: {ORIGEM_CONCILIACAO_APRESENTACOES}" in relatorio
-    assert "[FALHA | ALTA]" in relatorio
-    assert "[FALHA | MEDIA]" in relatorio
-    assert "[FALHA | BAIXA]" in relatorio
-    assert (
-        "Resumo: 23 validação(ões) | 5 OK | 18 FALHA "
-        "(ALTA: 12, MEDIA: 5, BAIXA: 1)" in relatorio
-    )
+    assert "  [OK] " in relatorio
+    assert "  [FALHA] " in relatorio
+    assert "[FALHA | " not in relatorio
+    assert "Resumo: 23 validação(ões) | 5 OK | 18 FALHA\n" in relatorio
 
 
 def test_formatar_e_salvar_relatorio_html(tmp_path: Path) -> None:
@@ -264,6 +261,14 @@ def test_formatar_e_salvar_relatorio_html(tmp_path: Path) -> None:
     assert html.lstrip().lower().startswith("<!doctype html>")
     assert "__DATA__" not in html
     assert html.count("</script>") == 1
+    assert "Validações e evidências" in html
+    assert "Evidências por contrato / origem" in html
+    assert "Evidências por arquivo / comparação" not in html
+    assert "ordenadas pelo nome do arquivo" in html
+    assert 'type="search"' in html
+    assert "criticidade" not in html.lower()
+    assert "severidade" not in html.lower()
+
     embutido = re.search(r"const D = (.*?);\nconst R =", html, re.S)
     assert embutido is not None
     dados = json.loads(embutido.group(1))
@@ -271,9 +276,9 @@ def test_formatar_e_salvar_relatorio_html(tmp_path: Path) -> None:
         "total_validacoes": 23,
         "ok": 5,
         "falhas": 18,
-        "falhas_por_severidade": {"ALTA": 12, "MEDIA": 5, "BAIXA": 1},
         "total_evidencias": sum(len(r.evidencias) for r in resultados),
     }
+    assert all("severidade" not in item for item in dados["resultados"])
 
     destino = salvar_relatorio_html(resultados, tmp_path / "auditoria.html")
     assert destino.read_text(encoding="utf-8") == html
@@ -286,7 +291,6 @@ def test_formatar_relatorio_html_escapa_fechamento_de_script() -> None:
                 origem="teste",
                 validacao="regra",
                 arquivo="data/teste.csv",
-                severidade="ALTA",
                 evidencias=["valor suspeito </script><script>alert(1)</script>"],
             )
         ]

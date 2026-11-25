@@ -32,7 +32,6 @@ def validar_tamanho_numero_processo_char20(
         origem=ORIGEM_SCHEMA,
         validacao="precatorio.numero_processo: até 20 caracteres (CHAR(20))",
         arquivo=rotulo_arquivo(caminho),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -56,7 +55,6 @@ def validar_valor_positivo_pagamento(caminho_pagamentos: Path) -> ResultadoValid
         origem=ORIGEM_SCHEMA,
         validacao="pagamento.valor: CHECK (valor > 0)",
         arquivo=rotulo_arquivo(caminho_pagamentos),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -77,7 +75,6 @@ def validar_tipo_aceito_banco(caminho_pagamentos: Path) -> ResultadoValidacao:
         origem=ORIGEM_SCHEMA,
         validacao="pagamento.tipo: CHECK (tipo IN ('pagamento', 'estorno'))",
         arquivo=rotulo_arquivo(caminho_pagamentos),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -108,7 +105,6 @@ def validar_referencia_precatorio_no_hub(
         origem=ORIGEM_SCHEMA,
         validacao="pagamento.precatorio_id: processo existente na base interna",
         arquivo=rotulo_arquivo(caminho_pagamentos),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 

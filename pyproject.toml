@@ -1,7 +1,7 @@
 [project]
 name = "bzr-group-case"
 version = "0.1.0"
-description = "Conciliação de limpeza de precatórios"
+description = "Conciliação e limpeza de precatórios"
 authors = [
     { name = "Abner Cerqueira", email = "abner.cerqueira@fatec.sp.gov.br" }
 ]

@@ -29,7 +29,6 @@ def validar_codificacao_utf8(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_TRIBUNAL,
         validacao="Codificação UTF-8",
         arquivo=rotulo_arquivo(caminho),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -64,7 +63,6 @@ def validar_delimitador_e_colunas(
         origem=ORIGEM_DOC_TRIBUNAL,
         validacao="Delimitador vírgula (',') e colunas esperadas",
         arquivo=rotulo_arquivo(caminho),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
@@ -82,7 +80,6 @@ def validar_processo_cnj_csv(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_TRIBUNAL,
         validacao="numero_processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)",
         arquivo=rotulo_arquivo(caminho),
-        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -100,7 +97,6 @@ def validar_ente_devedor_csv(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_TRIBUNAL,
         validacao="ente_devedor: texto não vazio",
         arquivo=rotulo_arquivo(caminho),
-        severidade="MEDIA",
         evidencias=evidencias,
     )
 
@@ -118,7 +114,6 @@ def validar_valor_face_decimal_csv(caminho: Path) -> ResultadoValidacao:
         origem=ORIGEM_DOC_TRIBUNAL,
         validacao="valor_face: número com ponto decimal",
         arquivo=rotulo_arquivo(caminho),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 

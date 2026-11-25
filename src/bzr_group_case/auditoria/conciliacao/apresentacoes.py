@@ -29,7 +29,6 @@ def validar_apresentacoes_contra_hub(
             origem=ORIGEM_CONCILIACAO_APRESENTACOES,
             validacao="Cobertura e datas de apresentação entre bases",
             arquivo=f"{rotulo_apres} x {rotulo_hub}",
-            severidade="MEDIA",
             evidencias=[f"Erro ao ler {rotulo_apres}: {erro}"],
         )
 
@@ -38,7 +37,6 @@ def validar_apresentacoes_contra_hub(
             origem=ORIGEM_CONCILIACAO_APRESENTACOES,
             validacao="Cobertura e datas de apresentação entre bases",
             arquivo=f"{rotulo_apres} x {rotulo_hub}",
-            severidade="MEDIA",
             evidencias=[f"Esperado lista JSON, encontrado {type(dados).__name__}"],
         )
 
@@ -86,6 +84,5 @@ def validar_apresentacoes_contra_hub(
         origem=ORIGEM_CONCILIACAO_APRESENTACOES,
         validacao="Cobertura e datas de apresentação entre bases",
         arquivo=f"{rotulo_apres} x {rotulo_hub}",
-        severidade="MEDIA",
         evidencias=evidencias,
     )

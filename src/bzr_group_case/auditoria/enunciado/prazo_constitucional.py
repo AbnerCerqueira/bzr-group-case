@@ -1,5 +1,6 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from bzr_group_case.auditoria.base import (
     ResultadoValidacao,
@@ -8,31 +9,37 @@ from bzr_group_case.auditoria.base import (
 )
 
 ORIGEM_ENUNCIADO = "docs/ENUNCIADO.md"
-FUSO_BRASILIA = timezone(timedelta(hours=-3))
+FUSO_BRASILIA = ZoneInfo("America/Sao_Paulo")
 
 
 def extrair_data_brasilia(apresentado_em: str) -> date:
     """Converte data ou data/hora ISO para a data civil no horário de Brasília."""
-    if len(apresentado_em) == 10:
-        return date.fromisoformat(apresentado_em)
+    valor = apresentado_em.strip()
+    if len(valor) == 10:
+        return date.fromisoformat(valor)
 
-    texto = (
-        f"{apresentado_em[:-1]}+00:00"
-        if apresentado_em.endswith("Z")
-        else apresentado_em
-    )
+    if valor.endswith(("Z", "z")):
+        if "T" not in valor and "t" not in valor and " " not in valor:
+            raise ValueError(f"Data/hora ISO inválida: {apresentado_em!r}")
+        texto = f"{valor[:-1]}+00:00"
+    else:
+        texto = valor
+
     instante = datetime.fromisoformat(texto)
     if instante.tzinfo is not None:
         instante = instante.astimezone(FUSO_BRASILIA)
     return instante.date()
 
 
-def calcular_prazo_constitucional(apresentado_em: str) -> str:
-    """Calcula o prazo constitucional (corte inclusivo em 2 de abril, UTC-3)."""
-    data_local = extrair_data_brasilia(apresentado_em)
+def _prazo_da_data_local(data_local: date) -> str:
     ate_2_de_abril = (data_local.month, data_local.day) <= (4, 2)
     ano_prazo = data_local.year + 1 if ate_2_de_abril else data_local.year + 2
     return f"{ano_prazo}-12-31"
+
+
+def calcular_prazo_constitucional(apresentado_em: str) -> str:
+    """Calcula o prazo constitucional (corte inclusivo em 2 de abril, Brasília)."""
+    return _prazo_da_data_local(extrair_data_brasilia(apresentado_em))
 
 
 def validar_prazo_pagamento_hub(caminho_hub: Path) -> ResultadoValidacao:
@@ -46,7 +53,7 @@ def validar_prazo_pagamento_hub(caminho_hub: Path) -> ResultadoValidacao:
 
         try:
             data_brasilia = extrair_data_brasilia(apresentado_em)
-            prazo_esperado = calcular_prazo_constitucional(apresentado_em)
+            prazo_esperado = _prazo_da_data_local(data_brasilia)
         except ValueError:
             evidencias.append(
                 f"Linha {num_linha} ({processo}): "
@@ -65,7 +72,6 @@ def validar_prazo_pagamento_hub(caminho_hub: Path) -> ResultadoValidacao:
         origem=ORIGEM_ENUNCIADO,
         validacao="Regra constitucional de prazo_pagamento (corte em 02/04, BRT)",
         arquivo=rotulo_arquivo(caminho_hub),
-        severidade="ALTA",
         evidencias=evidencias,
     )
 
