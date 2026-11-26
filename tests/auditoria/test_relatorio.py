@@ -33,13 +33,13 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
             (
                 ORIGEM_DOC_PAGAMENTOS,
                 "Estrutura: lista de objetos em JSON",
-                "data/pagamentos.json",
+                "data/raw/pagamentos.json",
             )
         ].ok
         is True
     )
     assert por_chave[
-        (ORIGEM_DOC_PAGAMENTOS, "evento_id: texto único", "data/pagamentos.json")
+        (ORIGEM_DOC_PAGAMENTOS, "evento_id: texto único", "data/raw/pagamentos.json")
     ].evidencias == [
         "Item 4: evento_id repetido 'ev-002' (primeira ocorrência no item 2) "
         "— registro idêntico",
@@ -51,14 +51,14 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_DOC_PAGAMENTOS,
             "processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)",
-            "data/pagamentos.json",
+            "data/raw/pagamentos.json",
         )
     ].evidencias == [
         "Item 6 (ev-005): encontrado '00234562120208260053'",
         "Item 12 (ev-010): encontrado ''",
     ]
     assert por_chave[
-        (ORIGEM_DOC_PAGAMENTOS, "valor: número", "data/pagamentos.json")
+        (ORIGEM_DOC_PAGAMENTOS, "valor: número", "data/raw/pagamentos.json")
     ].evidencias == [
         "Item 2 (ev-002): encontrado '2.500,50' (tipo str)",
         "Item 4 (ev-002): encontrado '2.500,50' (tipo str)",
@@ -68,14 +68,14 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_DOC_PAGAMENTOS,
             "data_pagamento: formato AAAA-MM-DD",
-            "data/pagamentos.json",
+            "data/raw/pagamentos.json",
         )
     ].evidencias == [
         "Item 2 (ev-002): encontrado '10/04/2025'",
         "Item 4 (ev-002): encontrado '10/04/2025'",
     ]
     assert por_chave[
-        (ORIGEM_DOC_PAGAMENTOS, "tipo: sempre 'pagamento'", "data/pagamentos.json")
+        (ORIGEM_DOC_PAGAMENTOS, "tipo: sempre 'pagamento'", "data/raw/pagamentos.json")
     ].evidencias == [
         "Item 8 (ev-007): esperado 'pagamento', encontrado 'estorno'",
     ]
@@ -84,7 +84,7 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
             (
                 ORIGEM_DOC_PAGAMENTOS,
                 "atualizado_em: data e hora válida",
-                "data/pagamentos.json",
+                "data/raw/pagamentos.json",
             )
         ].ok
         is True
@@ -94,14 +94,14 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
     assert [
         ev.split(":")[0]
         for ev in por_chave[
-            (ORIGEM_DOC_TRIBUNAL, "Codificação UTF-8", "data/tribunal.csv")
+            (ORIGEM_DOC_TRIBUNAL, "Codificação UTF-8", "data/raw/tribunal.csv")
         ].evidencias
     ] == ["Linha 2", "Linha 3", "Linha 4", "Linha 5", "Linha 6"]
     assert por_chave[
         (
             ORIGEM_DOC_TRIBUNAL,
             "Delimitador vírgula (',') e colunas esperadas",
-            "data/tribunal.csv",
+            "data/raw/tribunal.csv",
         )
     ].evidencias == [
         "Esperado  : ['numero_processo', 'ente_devedor', 'valor_face']",
@@ -111,7 +111,7 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_DOC_TRIBUNAL,
             "valor_face: número com ponto decimal",
-            "data/tribunal.csv",
+            "data/raw/tribunal.csv",
         )
     ].evidencias == [
         "Linha 2: encontrado '45.000,00'",
@@ -128,7 +128,7 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
                 (
                     ORIGEM_SCHEMA,
                     "precatorio.numero_processo: até 20 caracteres (CHAR(20))",
-                    "data/tribunal.csv",
+                    "data/raw/tribunal.csv",
                 )
             ].evidencias
         )
@@ -140,21 +140,25 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
                 (
                     ORIGEM_SCHEMA,
                     "precatorio.numero_processo: até 20 caracteres (CHAR(20))",
-                    "data/hub.csv",
+                    "data/raw/hub.csv",
                 )
             ].evidencias
         )
         == 4
     )
     assert por_chave[
-        (ORIGEM_SCHEMA, "pagamento.valor: CHECK (valor > 0)", "data/pagamentos.json")
+        (
+            ORIGEM_SCHEMA,
+            "pagamento.valor: CHECK (valor > 0)",
+            "data/raw/pagamentos.json",
+        )
     ].evidencias == ["Item 11 (ev-009): encontrado -200 (esperado > 0)"]
     assert (
         por_chave[
             (
                 ORIGEM_SCHEMA,
                 "pagamento.tipo: CHECK (tipo IN ('pagamento', 'estorno'))",
-                "data/pagamentos.json",
+                "data/raw/pagamentos.json",
             )
         ].ok
         is True
@@ -163,12 +167,12 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_SCHEMA,
             "pagamento.precatorio_id: processo existente na base interna",
-            "data/pagamentos.json",
+            "data/raw/pagamentos.json",
         )
     ].evidencias == [
-        "Item 12 (ev-010): processo '' não encontrado em data/hub.csv",
+        "Item 12 (ev-010): processo '' não encontrado em data/raw/hub.csv",
         "Item 13 (ev-011): processo '0067890-65.2016.8.26.0053' "
-        "não encontrado em data/hub.csv",
+        "não encontrado em data/raw/hub.csv",
     ]
 
     # Origem: docs/ENUNCIADO.md
@@ -176,7 +180,7 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_ENUNCIADO,
             "Regra constitucional de prazo_pagamento (corte em 02/04, BRT)",
-            "data/hub.csv",
+            "data/raw/hub.csv",
         )
     ].evidencias == [
         "Linha 2 (0012345-10.2019.8.26.0053): apresentado_em='2025-04-02' "
@@ -186,7 +190,7 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
     ]
 
     # Origem: Conciliação (tribunal.csv x hub.csv)
-    par_cadastro = "data/tribunal.csv x data/hub.csv"
+    par_cadastro = "data/raw/tribunal.csv x data/raw/hub.csv"
     assert por_chave[
         (
             ORIGEM_CONCILIACAO_CADASTRO,
@@ -194,10 +198,10 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
             par_cadastro,
         )
     ].evidencias == [
-        "Processo '0067890-65.2016.8.26.0053' (linha 6 de data/tribunal.csv): "
-        "ausente em data/hub.csv",
-        "Processo '0056789-54.2017.4.03.6100' (linha 6 de data/hub.csv): "
-        "ausente em data/tribunal.csv",
+        "Processo '0067890-65.2016.8.26.0053' (linha 6 de data/raw/tribunal.csv): "
+        "ausente em data/raw/hub.csv",
+        "Processo '0056789-54.2017.4.03.6100' (linha 6 de data/raw/hub.csv): "
+        "ausente em data/raw/tribunal.csv",
     ]
     assert por_chave[
         (
@@ -231,11 +235,11 @@ def test_executar_auditoria_nos_dados_reais_do_case() -> None:
         (
             ORIGEM_CONCILIACAO_APRESENTACOES,
             "Cobertura e datas de apresentação entre bases",
-            "data/apresentacoes.json x data/hub.csv",
+            "data/raw/apresentacoes.json x data/raw/hub.csv",
         )
     ].evidencias == [
         "Item 6 (0067890-65.2016.8.26.0053): apresentado_em='2023-12-31' "
-        "ausente em data/hub.csv"
+        "ausente em data/raw/hub.csv"
     ]
 
 
@@ -290,7 +294,7 @@ def test_formatar_relatorio_html_escapa_fechamento_de_script() -> None:
             ResultadoValidacao(
                 origem="teste",
                 validacao="regra",
-                arquivo="data/teste.csv",
+                arquivo="data/raw/teste.csv",
                 evidencias=["valor suspeito </script><script>alert(1)</script>"],
             )
         ]

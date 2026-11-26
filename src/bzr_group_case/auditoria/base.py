@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 RAIZ_PROJETO = Path(__file__).resolve().parents[3]
-DIRETORIO_DADOS = RAIZ_PROJETO / "data"
+DIRETORIO_DADOS = RAIZ_PROJETO / "data" / "raw"
 
 PADRAO_CNJ = re.compile(r"\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}", re.ASCII)
 

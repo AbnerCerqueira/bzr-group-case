@@ -8,7 +8,7 @@ from typing import Any
 from bzr_group_case.limpeza.modelos import DadosBrutos, RegistroOcorrencia
 
 RAIZ_PROJETO = Path(__file__).resolve().parents[4]
-DIRETORIO_DADOS = RAIZ_PROJETO / "data"
+DIRETORIO_DADOS = RAIZ_PROJETO / "data" / "raw"
 
 
 def _rejeitar_constante_json(constante: str) -> Any:

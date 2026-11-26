@@ -68,11 +68,11 @@ Para piorar, quando um evento não pode ser importado, o fluxo descrito apenas i
 <summary>Ver evidências (7 ocorrências — processo, arquivo, registro e linha)</summary>
 
 - **[ENUNCIADO.md (L15–19)](./ENUNCIADO.md#L15-L19) · fluxo operacional descrito:** reenvio diário dos últimos 7 dias, script que soma cada valor e é reexecutado em caso de falha, edição/salvamento de `tribunal.csv` no Excel e descarte silencioso de eventos que falham na importação.
-- **[pagamentos.json (L26–33)](../data/pagamentos.json#L26-L33) · `ev-002`:** cópia idêntica do registro já enviado em [L10–17](../data/pagamentos.json#L10-L17).
-- **[pagamentos.json (L66–73)](../data/pagamentos.json#L66-L73) · `ev-001`:** mesmo evento de [L2–9](../data/pagamentos.json#L2-L9), atualizado no dia seguinte de R$ 15.000 para R$ 15.500 (somar ambos no fluxo descrito geraria R$ 30.500).
-- **[pagamentos.json (L34–41)](../data/pagamentos.json#L34-L41) · `ev-004`:** valor veio nulo — no fluxo descrito, tende a ser ignorado em silêncio.
-- **[pagamentos.json (L82–105)](../data/pagamentos.json#L82-L105) · `ev-009`, `ev-010`, `ev-011`:** valor negativo (`-200`), processo vazio e processo fora do hub — no fluxo descrito, tendem a ser descartados sem alerta.
-- **[tribunal.csv (L1–6)](../data/tribunal.csv#L1-L6) · cabeçalho + 5 registros:** salvo pelo Excel em `cp1252` (Windows-1252) / `Latin-1` (acentos fora de UTF-8), com `;` no lugar de `,` e valores como `45.000,00`.
+- **[pagamentos.json (L26–33)](../data/raw/pagamentos.json#L26-L33) · `ev-002`:** cópia idêntica do registro já enviado em [L10–17](../data/raw/pagamentos.json#L10-L17).
+- **[pagamentos.json (L66–73)](../data/raw/pagamentos.json#L66-L73) · `ev-001`:** mesmo evento de [L2–9](../data/raw/pagamentos.json#L2-L9), atualizado no dia seguinte de R$ 15.000 para R$ 15.500 (somar ambos no fluxo descrito geraria R$ 30.500).
+- **[pagamentos.json (L34–41)](../data/raw/pagamentos.json#L34-L41) · `ev-004`:** valor veio nulo — no fluxo descrito, tende a ser ignorado em silêncio.
+- **[pagamentos.json (L82–105)](../data/raw/pagamentos.json#L82-L105) · `ev-009`, `ev-010`, `ev-011`:** valor negativo (`-200`), processo vazio e processo fora do hub — no fluxo descrito, tendem a ser descartados sem alerta.
+- **[tribunal.csv (L1–6)](../data/raw/tribunal.csv#L1-L6) · cabeçalho + 5 registros:** salvo pelo Excel em `cp1252` (Windows-1252) / `Latin-1` (acentos fora de UTF-8), com `;` no lugar de `,` e valores como `45.000,00`.
 - **[schema.sql (L11)](../schema.sql#L11) · `pagamento.evento_id`:** sem trava de unicidade (`UNIQUE`) e sem coluna `atualizado_em` para identificar retificações.
 
 </details>
@@ -94,10 +94,10 @@ Duas regras essenciais da operação apresentam falhas ou desalinhamento:
 <summary>Ver evidências (5 ocorrências — processo, arquivo, registro e linha)</summary>
 
 - **[ENUNCIADO.md (L16)](./ENUNCIADO.md#L16) · fluxo de importação:** descreve que o script *"soma cada valor ao total pago do processo no sistema"*, sem distinção de estorno.
-- **[pagamentos.json (L58–65)](../data/pagamentos.json#L58-L65) · `ev-007`:** estorno de R$ 5.000 sobre o pagamento de R$ 5.000 em [L50–57](../data/pagamentos.json#L50-L57); somar ambos gera R$ 10.000 em vez de R$ 0.
+- **[pagamentos.json (L58–65)](../data/raw/pagamentos.json#L58-L65) · `ev-007`:** estorno de R$ 5.000 sobre o pagamento de R$ 5.000 em [L50–57](../data/raw/pagamentos.json#L50-L57); somar ambos gera R$ 10.000 em vez de R$ 0.
 - **[DOCUMENTACAO_TRIBUNAL.md (L15)](./DOCUMENTACAO_TRIBUNAL.md#L15) × [schema.sql (L12)](../schema.sql#L12) · campo `tipo`:** documentação afirma ser sempre `"pagamento"`, mas o banco já prevê `('pagamento', 'estorno')`.
-- **[hub.csv (L2)](../data/hub.csv#L2) · `0012345-10.2019.8.26.0053`:** apresentado em `2025-04-02` (sem horário), ficou com prazo `2027-12-31` (correto: `2026-12-31`; contraste com [L5](../data/hub.csv#L5), que com `-03:00` calculou certo).
-- **[hub.csv (L6)](../data/hub.csv#L6) · `0056789-54.2017.4.03.6100`:** apresentado em `2025-04-03T01:00:00Z` (`02/04 22:00` em Brasília), ficou com prazo `2027-12-31` (correto: `2026-12-31`).
+- **[hub.csv (L2)](../data/raw/hub.csv#L2) · `0012345-10.2019.8.26.0053`:** apresentado em `2025-04-02` (sem horário), ficou com prazo `2027-12-31` (correto: `2026-12-31`; contraste com [L5](../data/raw/hub.csv#L5), que com `-03:00` calculou certo).
+- **[hub.csv (L6)](../data/raw/hub.csv#L6) · `0056789-54.2017.4.03.6100`:** apresentado em `2025-04-03T01:00:00Z` (`02/04 22:00` em Brasília), ficou com prazo `2027-12-31` (correto: `2026-12-31`).
 
 </details>
 
@@ -115,17 +115,17 @@ Os arquivos que chegam para a operação não respeitam o leiaute documentado pe
 <summary>Ver evidências (7 ocorrências + 9 CNJs acima de 20 caracteres — arquivo, registro e linha)</summary>
 
 - **[schema.sql (L3)](../schema.sql#L3) · `precatorio.numero_processo`:** desalinhamento de contrato — definido como `CHAR(20)` sem normalização na carga, enquanto os arquivos e a documentação trazem o CNJ formatado com 25 caracteres (9 ocorrências nos arquivos de cadastro):
-  - `0012345-10.2019.8.26.0053` em [tribunal.csv (L2)](../data/tribunal.csv#L2) e [hub.csv (L2)](../data/hub.csv#L2);
-  - `0023456-21.2020.8.26.0053` em [tribunal.csv (L3)](../data/tribunal.csv#L3);
-  - `0034567-32.2018.8.26.0405` em [tribunal.csv (L4)](../data/tribunal.csv#L4) e [hub.csv (L4)](../data/hub.csv#L4);
-  - `0045678-43.2021.5.02.0011` em [tribunal.csv (L5)](../data/tribunal.csv#L5) e [hub.csv (L5)](../data/hub.csv#L5);
-  - `0067890-65.2016.8.26.0053` em [tribunal.csv (L6)](../data/tribunal.csv#L6);
-  - `0056789-54.2017.4.03.6100` em [hub.csv (L6)](../data/hub.csv#L6).
-- **[schema.sql (L1–6)](../schema.sql#L1-L6) × [hub.csv (L1)](../data/hub.csv#L1) · tabela `precatorio`:** não possui colunas `apresentado_em` e `prazo_pagamento`, embora o sistema calcule e exporte esses campos.
-- **[pagamentos.json (L10–17)](../data/pagamentos.json#L10-L17) · `ev-002` (e [L26–33](../data/pagamentos.json#L26-L33)):** valor veio como texto brasileiro (`"2.500,50"`) e data como `"10/04/2025"` em vez de `AAAA-MM-DD`.
-- **[pagamentos.json (L42–49)](../data/pagamentos.json#L42-L49) · `ev-005`:** número do processo sem pontuação (`00234562120208260053`), diferente do padrão CNJ documentado.
-- **[pagamentos.json (L34–41)](../data/pagamentos.json#L34-L41) e [L90–97](../data/pagamentos.json#L90-L97) · `ev-004` e `ev-010`:** valor nulo (`ev-004`) e número de processo vazio (`ev-010`).
-- **[pagamentos.json (L82–89)](../data/pagamentos.json#L82-L89) × [schema.sql (L13)](../schema.sql#L13) · `ev-009`:** valor `-200` marcado como `"pagamento"`, violando `CHECK (valor > 0)`.
+  - `0012345-10.2019.8.26.0053` em [tribunal.csv (L2)](../data/raw/tribunal.csv#L2) e [hub.csv (L2)](../data/raw/hub.csv#L2);
+  - `0023456-21.2020.8.26.0053` em [tribunal.csv (L3)](../data/raw/tribunal.csv#L3);
+  - `0034567-32.2018.8.26.0405` em [tribunal.csv (L4)](../data/raw/tribunal.csv#L4) e [hub.csv (L4)](../data/raw/hub.csv#L4);
+  - `0045678-43.2021.5.02.0011` em [tribunal.csv (L5)](../data/raw/tribunal.csv#L5) e [hub.csv (L5)](../data/raw/hub.csv#L5);
+  - `0067890-65.2016.8.26.0053` em [tribunal.csv (L6)](../data/raw/tribunal.csv#L6);
+  - `0056789-54.2017.4.03.6100` em [hub.csv (L6)](../data/raw/hub.csv#L6).
+- **[schema.sql (L1–6)](../schema.sql#L1-L6) × [hub.csv (L1)](../data/raw/hub.csv#L1) · tabela `precatorio`:** não possui colunas `apresentado_em` e `prazo_pagamento`, embora o sistema calcule e exporte esses campos.
+- **[pagamentos.json (L10–17)](../data/raw/pagamentos.json#L10-L17) · `ev-002` (e [L26–33](../data/raw/pagamentos.json#L26-L33)):** valor veio como texto brasileiro (`"2.500,50"`) e data como `"10/04/2025"` em vez de `AAAA-MM-DD`.
+- **[pagamentos.json (L42–49)](../data/raw/pagamentos.json#L42-L49) · `ev-005`:** número do processo sem pontuação (`00234562120208260053`), diferente do padrão CNJ documentado.
+- **[pagamentos.json (L34–41)](../data/raw/pagamentos.json#L34-L41) e [L90–97](../data/raw/pagamentos.json#L90-L97) · `ev-004` e `ev-010`:** valor nulo (`ev-004`) e número de processo vazio (`ev-010`).
+- **[pagamentos.json (L82–89)](../data/raw/pagamentos.json#L82-L89) × [schema.sql (L13)](../schema.sql#L13) · `ev-009`:** valor `-200` marcado como `"pagamento"`, violando `CHECK (valor > 0)`.
 - **[DOCUMENTACAO_TRIBUNAL.md (L1–26)](./DOCUMENTACAO_TRIBUNAL.md#L1-L26) · Leiaute v2.1:** não documenta `apresentacoes.json`, retificações nem estornos.
 
 </details>
@@ -147,12 +147,12 @@ Ao cruzar a lista do tribunal, o cadastro interno e o arquivo de apresentações
 <summary>Ver evidências (7 ocorrências — processo, arquivo, registro e linha)</summary>
 
 - **[ENUNCIADO.md (L17)](./ENUNCIADO.md#L17) · conferência manual:** operador compara `tribunal.csv` e `hub.csv` procurando nome do ente e número do processo exatamente como estão escritos.
-- **Falso divergente — [tribunal.csv (L3)](../data/tribunal.csv#L3) × [hub.csv (L3)](../data/hub.csv#L3) · `0023456-21.2020.8.26.0053`:** com máscara no tribunal e sem máscara no hub (`00234562120208260053`).
-- **Falso divergente — [tribunal.csv (L2)](../data/tribunal.csv#L2) × [hub.csv (L2)](../data/hub.csv#L2) · `0012345-10.2019.8.26.0053`:** `Município de São Paulo` no tribunal vs. `MUNICIPIO DE SAO PAULO` no hub.
-- **Valor diferente — [tribunal.csv (L3)](../data/tribunal.csv#L3) × [hub.csv (L3)](../data/hub.csv#L3) · `0023456-21.2020.8.26.0053`:** valor de face de R$ 30.000 no tribunal vs. R$ 31.000 no hub (+R$ 1.000).
-- **Devedor diferente — [tribunal.csv (L5)](../data/tribunal.csv#L5) × [hub.csv (L5)](../data/hub.csv#L5) · `0045678-43.2021.5.02.0011`:** `União` no tribunal vs. `Município de Santos` no hub.
-- **Falta no hub — [tribunal.csv (L6)](../data/tribunal.csv#L6), [apresentacoes.json (L22–25)](../data/apresentacoes.json#L22-L25) · `0067890-65.2016.8.26.0053`:** não existe no hub — por isso o pagamento `ev-011` de R$ 4.000 ([pagamentos.json L98–105](../data/pagamentos.json#L98-L105)) fica sem vínculo.
-- **Falta no tribunal — [hub.csv (L6)](../data/hub.csv#L6), [apresentacoes.json (L18–21)](../data/apresentacoes.json#L18-L21) · `0056789-54.2017.4.03.6100`:** existe no hub e nas apresentações, mas não aparece na lista do tribunal.
+- **Falso divergente — [tribunal.csv (L3)](../data/raw/tribunal.csv#L3) × [hub.csv (L3)](../data/raw/hub.csv#L3) · `0023456-21.2020.8.26.0053`:** com máscara no tribunal e sem máscara no hub (`00234562120208260053`).
+- **Falso divergente — [tribunal.csv (L2)](../data/raw/tribunal.csv#L2) × [hub.csv (L2)](../data/raw/hub.csv#L2) · `0012345-10.2019.8.26.0053`:** `Município de São Paulo` no tribunal vs. `MUNICIPIO DE SAO PAULO` no hub.
+- **Valor diferente — [tribunal.csv (L3)](../data/raw/tribunal.csv#L3) × [hub.csv (L3)](../data/raw/hub.csv#L3) · `0023456-21.2020.8.26.0053`:** valor de face de R$ 30.000 no tribunal vs. R$ 31.000 no hub (+R$ 1.000).
+- **Devedor diferente — [tribunal.csv (L5)](../data/raw/tribunal.csv#L5) × [hub.csv (L5)](../data/raw/hub.csv#L5) · `0045678-43.2021.5.02.0011`:** `União` no tribunal vs. `Município de Santos` no hub.
+- **Falta no hub — [tribunal.csv (L6)](../data/raw/tribunal.csv#L6), [apresentacoes.json (L22–25)](../data/raw/apresentacoes.json#L22-L25) · `0067890-65.2016.8.26.0053`:** não existe no hub — por isso o pagamento `ev-011` de R$ 4.000 ([pagamentos.json L98–105](../data/raw/pagamentos.json#L98-L105)) fica sem vínculo.
+- **Falta no tribunal — [hub.csv (L6)](../data/raw/hub.csv#L6), [apresentacoes.json (L18–21)](../data/raw/apresentacoes.json#L18-L21) · `0056789-54.2017.4.03.6100`:** existe no hub e nas apresentações, mas não aparece na lista do tribunal.
 
 </details>
 

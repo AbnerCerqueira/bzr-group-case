@@ -149,10 +149,10 @@ const STATUS_OPCOES = [
 ];
 
 const ARQ = {
-  'data/tribunal.csv':['tribunal.csv','Precatórios do tribunal'],
-  'data/pagamentos.json':['pagamentos.json','Eventos de pagamento'],
-  'data/hub.csv':['hub.csv','Base interna'],
-  'data/apresentacoes.json':['apresentacoes.json','Datas de apresentação']
+  'data/raw/tribunal.csv':['tribunal.csv','Precatórios do tribunal'],
+  'data/raw/pagamentos.json':['pagamentos.json','Eventos de pagamento'],
+  'data/raw/hub.csv':['hub.csv','Base interna'],
+  'data/raw/apresentacoes.json':['apresentacoes.json','Datas de apresentação']
 };
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -168,7 +168,7 @@ function contratoDe(origem) {
 
 function nomeArq(a) {
   if (ARQ[a]) return ARQ[a];
-  const p = a.split(' x ').map(x => (ARQ[x] || [x.replace('data/', '')])[0]);
+  const p = a.split(' x ').map(x => (ARQ[x] || [x.replace(/^data\/(?:raw\/)?/, '')])[0]);
   return [p.join(' × '), 'Conciliação entre bases'];
 }
 

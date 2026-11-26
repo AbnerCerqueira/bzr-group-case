@@ -10,7 +10,7 @@ from bzr_group_case.auditoria.base import (
     somente_digitos,
 )
 
-ORIGEM_CONCILIACAO_CADASTRO = "Conciliação (data/tribunal.csv x data/hub.csv)"
+ORIGEM_CONCILIACAO_CADASTRO = "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)"
 
 PADRAO_MONETARIO_PONTO = re.compile(r"-?\d+(\.\d+)?", re.ASCII)
 PADRAO_MONETARIO_BR = re.compile(r"-?\d{1,3}(\.\d{3})*,\d+", re.ASCII)

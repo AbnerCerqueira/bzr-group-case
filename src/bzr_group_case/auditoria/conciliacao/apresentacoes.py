@@ -9,7 +9,7 @@ from bzr_group_case.auditoria.base import (
 from bzr_group_case.auditoria.conciliacao.cadastro import indexar_csv_por_processo
 
 ORIGEM_CONCILIACAO_APRESENTACOES = (
-    "Conciliação (data/apresentacoes.json x data/hub.csv)"
+    "Conciliação (data/raw/apresentacoes.json x data/raw/hub.csv)"
 )
 
 
