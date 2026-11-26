@@ -7,6 +7,8 @@ ProblemaDiagnostico = Literal["P1", "P2", "P3", "P4"]
 CategoriaOcorrencia = Literal["corrigido", "descartado", "em_duvida"]
 EntidadeOcorrencia = Literal["arquivo", "precatorio", "pagamento"]
 StatusConciliacao = Literal["conciliado", "em_duvida"]
+TipoPagamento = Literal["pagamento", "estorno"]
+DestinoPagamento = Literal["mantido", "deduplicado", "substituido", "descartado"]
 
 
 @dataclass(frozen=True)
@@ -55,4 +57,41 @@ class ResultadoConciliacaoPrecatorios:
     chaves_hub: frozenset[str]
     chaves_tribunal: frozenset[str]
     prazos_hub_originais: Mapping[str, str | None]
+    ocorrencias: tuple[RegistroOcorrencia, ...]
+
+
+@dataclass(frozen=True)
+class PagamentoLimpo:
+    """Evento financeiro limpo pronto para carga na tabela pagamento."""
+
+    evento_id: str
+    numero_processo: str
+    tipo: TipoPagamento
+    valor: Decimal
+    data_pagamento: str
+    atualizado_em: str
+
+
+@dataclass(frozen=True)
+class RastreamentoPagamento:
+    """Rastreamento 1-para-1 de cada item lido de pagamentos.json."""
+
+    indice: int
+    evento_id: str
+    numero_processo: str
+    tipo: str
+    valor_original: str
+    data_pagamento: str
+    atualizado_em: str
+    destino: DestinoPagamento
+    problemas: tuple[ProblemaDiagnostico, ...]
+    motivo: str
+
+
+@dataclass(frozen=True)
+class ResultadoLimpezaPagamentos:
+    """Resultado da limpeza de pagamentos, rastreamento 1-para-1 e ocorrências."""
+
+    pagamentos: tuple[PagamentoLimpo, ...]
+    itens_rastreados: tuple[RastreamentoPagamento, ...]
     ocorrencias: tuple[RegistroOcorrencia, ...]
