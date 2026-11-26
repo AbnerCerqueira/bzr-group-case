@@ -13,6 +13,7 @@ from bzr_group_case.auditoria.documentacao_tribunal import (
 )
 from bzr_group_case.auditoria.enunciado import auditar_enunciado
 from bzr_group_case.auditoria.schema_banco import auditar_schema
+from bzr_group_case.comum import MARCADOR_CSS_BASE, carregar_css_base_painel
 
 CAMINHO_TEMPLATE_HTML = Path(__file__).with_name("painel.html")
 CAMINHO_PADRAO_HTML = RAIZ_PROJETO / "docs" / "auditoria.html"
@@ -101,8 +102,13 @@ def formatar_relatorio_html(resultados: list[ResultadoValidacao]) -> str:
     """Gera a página HTML autocontida da auditoria a partir de ``painel.html``."""
     template = CAMINHO_TEMPLATE_HTML.read_text(encoding="utf-8")
     dados = json.dumps(_serializar_dados(resultados), ensure_ascii=False)
-    # "</" escapado evita que alguma evidência feche a tag <script>.
-    return template.replace(MARCADOR_DADOS, dados.replace("</", "<\\/"))
+    # Escapa <, > e & no JSON embutido para neutralizar </script> e <!-- em HTML5.
+    dados_seguros = (
+        dados.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")
+    )
+    return template.replace(MARCADOR_CSS_BASE, carregar_css_base_painel()).replace(
+        MARCADOR_DADOS, dados_seguros
+    )
 
 
 def salvar_relatorio_html(
@@ -111,5 +117,6 @@ def salvar_relatorio_html(
 ) -> Path:
     """Grava a página HTML da auditoria em ``destino`` e retorna o caminho."""
     destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_text(formatar_relatorio_html(resultados), encoding="utf-8")
+    with destino.open("w", encoding="utf-8", newline="\n") as arquivo:
+        arquivo.write(formatar_relatorio_html(resultados))
     return destino

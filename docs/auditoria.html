@@ -5,113 +5,244 @@
   --foreground:#ececef;
   --card:#121214;
   --border:#26262a;
+  --border-strong:#383842;
   --secondary:#1b1b1f;
   --muted-foreground:#a1a1aa;
   --ring:#52525b;
   --code-background:#18181b;
+  --code-foreground:#e4e4e7;
   --destructive:#f04444;
   --info:#3b82f6;
   --success:#22c55e;
+  --warning:#f59e0b;
+  --premissa:#c084fc;
+  --neutral:#71717a;
+  --accent:var(--info);
+  --diff-old:#fca5a5;
+  --diff-new:#86efac;
+  --diff-keep:#fcd34d;
+  --premissa-text:#d8b4fe;
+  --warning-text:#fde68a;
+  --mark-bg:color-mix(in srgb,var(--warning) 30%,transparent);
+  --mark-fg:#fef08a;
   --radius:10px;
   --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --falha:var(--destructive);
-  --ok:var(--success);
-  --accent:var(--info);
 }
 *{box-sizing:border-box}
-body{margin:0 auto;max-width:940px;padding:24px 16px 40px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:13.5px;line-height:1.45}
+body{margin:0 auto;max-width:1040px;padding:20px 16px 48px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:13.5px;line-height:1.45}
 .muted{color:var(--muted-foreground)}
-.intro{margin:0 0 14px}
+.mono{font-family:var(--font-mono);font-size:12.5px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:is(button,a,summary,[role=button],[role=tab],input):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+mark{background:var(--mark-bg);color:var(--mark-fg);padding:0 2px;border-radius:3px}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.nav-switch{display:inline-flex;gap:4px;padding:3px;background:var(--card);border:1px solid var(--border);border-radius:9px;flex-wrap:wrap}
+.nav-link{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:6px;font-size:12.5px;font-weight:500;color:var(--muted-foreground);text-decoration:none;transition:background .12s,color .12s}
+.nav-link:hover{background:var(--secondary);color:var(--foreground)}
+.nav-link[aria-current=page]{background:var(--secondary);color:var(--foreground);font-weight:650;box-shadow:inset 0 0 0 1px var(--border-strong)}
+.nav-step{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--code-background);border:1px solid var(--border);color:var(--muted-foreground)}
+.nav-link[aria-current=page] .nav-step{background:color-mix(in srgb,var(--accent) 22%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--foreground)}
+.topbar-hint{font-size:11.5px;color:var(--muted-foreground);display:inline-flex;align-items:center;gap:6px}
+.kbd{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border-radius:4px;border:1px solid var(--border-strong);background:var(--card);color:var(--foreground)}
+
+.intro{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin:0 0 14px}
 .intro h1{font-size:19px;margin:0 0 4px;font-weight:700}
-.intro p{margin:0;font-size:13px}
+.intro p{margin:0;font-size:13px;max-width:740px}
+.status-geral{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);white-space:nowrap}
+
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px}
 h2{font-size:14.5px;margin:0 0 2px;font-weight:650}
+h3{font-size:12px;margin:0 0 8px;font-weight:650;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground)}
 .sub{font-size:12.5px;margin:0 0 12px}
-.filtro{position:sticky;top:0;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.filtro-grupo{margin-top:10px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sec-head-left{min-width:0;flex:1 1 280px}
+.sec-head-left h2{margin:0 0 2px}
+.sec-head-left .sub{margin:0}
+.sec-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.filtro{position:sticky;top:0;z-index:20;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.48)}
+.filtro-grid{display:flex;gap:12px 16px;flex-wrap:wrap;align-items:flex-start}
+.filtro-grupo{margin-top:9px}
 .filtro-grupo:first-child{margin-top:0}
-.filtro-label{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground);margin-bottom:6px}
+.filtro-col{flex:0 1 auto;min-width:0}
+.filtro-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground);margin-bottom:5px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.chip{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:999px;padding:5px 12px;display:inline-flex;gap:6px;align-items:center;transition:background .12s,border-color .12s}
+.chip{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:999px;padding:4px 11px;display:inline-flex;gap:6px;align-items:center;transition:background .12s,border-color .12s}
 .chip:hover{background:var(--secondary)}
 .chip .n{font-variant-numeric:tabular-nums;color:var(--muted-foreground)}
-.chip[aria-pressed=true]{border-color:var(--c,var(--foreground));background:color-mix(in srgb,var(--c,var(--foreground)) 18%,transparent);font-weight:600}
+.chip[aria-pressed=true]{border-color:var(--c,var(--foreground));background:color-mix(in srgb,var(--c,var(--foreground)) 16%,transparent);font-weight:600}
 .chip[aria-pressed=true] .n{color:var(--foreground)}
-.busca-linha{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.busca-wrap{position:relative;flex:1;min-width:220px}
+.dot{width:7px;height:7px;border-radius:999px;display:inline-block;flex:0 0 auto}
+
+.busca-linha{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.busca-col{flex:1 1 260px;min-width:220px}
+.busca-wrap{position:relative;width:100%}
 .busca-wrap input{width:100%;font:inherit;font-size:13px;color:var(--foreground);background:var(--code-background);border:1px solid var(--border);border-radius:8px;padding:7px 34px 7px 12px;outline:none}
 .busca-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
 .busca-wrap input::-webkit-search-cancel-button{-webkit-appearance:none}
 .busca-limpar{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--muted-foreground);cursor:pointer;padding:3px 7px;border-radius:6px;font:inherit;font-size:12px}
 .busca-limpar:hover{background:var(--secondary);color:var(--foreground)}
 .busca-limpar[hidden]{display:none}
-.ativos{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px}
+
+.ativos{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:12px}
 .ativos[hidden]{display:none}
 .pill{display:inline-flex;gap:6px;align-items:center;background:var(--secondary);border:1px solid var(--border);border-radius:999px;padding:2px 4px 2px 10px}
-.pill button{font:inherit;border:0;background:transparent;color:var(--muted-foreground);cursor:pointer;padding:0 6px}
+.pill button{font:inherit;border:0;background:transparent;color:var(--muted-foreground);cursor:pointer;padding:0 6px;border-radius:999px}
 .pill button:hover{color:var(--foreground)}
-.btn-reset{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:999px;padding:3px 10px;margin-left:auto}
-.btn-reset:hover{background:var(--secondary)}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-.kpi{margin:0}
-.kpi .v{font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
-.kpi .v small{font-size:14px;font-weight:500;color:var(--muted-foreground)}
-.kpi .l{font-size:12.5px;margin-top:4px}
-.row{display:grid;grid-template-columns:230px 1fr 112px;gap:10px;align-items:center;padding:8px 8px;margin:0 -8px;border-radius:6px}
+.btn-reset,.btn-sec{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:999px;padding:4px 11px;transition:background .12s,border-color .12s;display:inline-flex;align-items:center;gap:5px}
+.btn-reset{margin-left:auto}
+.btn-reset:hover,.btn-sec:hover{background:var(--secondary);border-color:var(--border-strong)}
+
+.kpis{display:grid;gap:12px;margin-top:12px}
+.kpi{margin:0;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font:inherit;color:inherit}
+.kpi-click{cursor:pointer;transition:background .12s,border-color .12s}
+.kpi-click:hover{background:var(--secondary);border-color:var(--border-strong)}
+.kpi .v{font-size:25px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;font-weight:500;color:var(--muted-foreground)}
+.kpi .l{font-size:12px;margin-top:4px;font-weight:600}
+.kpi .d{font-size:11.5px;margin-top:2px;color:var(--muted-foreground)}
+.kpi-bar{display:flex;height:4px;border-radius:999px;overflow:hidden;gap:2px;margin-top:10px;background:color-mix(in srgb,var(--foreground) 8%,transparent)}
+.kpi-bar span{display:block;height:100%;border-radius:999px;min-width:3px}
+
+.tag{display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.02em;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);white-space:nowrap}
+.tag-sm{font-size:10px;padding:1px 6px}
+.copy-btn{font:inherit;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--code-background);color:var(--muted-foreground);border-radius:5px;padding:1px 6px;display:inline-flex;align-items:center;gap:4px;transition:background .12s,color .12s,border-color .12s;vertical-align:middle}
+.copy-btn:hover{background:var(--secondary);color:var(--foreground);border-color:var(--border-strong)}
+.copy-btn.ok{color:var(--success);border-color:color-mix(in srgb,var(--success) 50%,transparent)}
+
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:8px;border:1px solid var(--border);background:var(--code-background)}
+.seg button{font:inherit;font-size:11.5px;cursor:pointer;border:0;background:transparent;color:var(--muted-foreground);border-radius:6px;padding:4px 9px;transition:background .12s,color .12s}
+.seg button:hover{color:var(--foreground)}
+.seg button[aria-pressed=true]{background:var(--secondary);color:var(--foreground);font-weight:600}
+
+.vazio{padding:22px 12px;text-align:center;color:var(--muted-foreground)}
+.vazio-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+
+@media (max-width:760px){
+  body{padding:14px 12px 36px}
+  .topbar-hint{display:none}
+  .filtro{position:static;box-shadow:none}
+  .btn-reset{margin-left:0}
+  .busca-col{min-width:100%}
+}
+@media print{
+  :root{
+    color-scheme:light;
+    --background:#ffffff;
+    --foreground:#111827;
+    --card:#ffffff;
+    --border:#d4d4d8;
+    --border-strong:#a1a1aa;
+    --secondary:#f4f4f5;
+    --muted-foreground:#52525b;
+    --code-background:#f8fafc;
+    --code-foreground:#18181b;
+    --diff-old:#b91c1c;
+    --diff-new:#15803d;
+    --diff-keep:#a16207;
+    --premissa-text:#7e22ce;
+    --warning-text:#92400e;
+    --mark-bg:#fef08a;
+    --mark-fg:#111827;
+  }
+  body{max-width:none;padding:0;background:#fff;color:#111}
+  .topbar,.filtro,.sec-actions,.copy-btn,.btn-sec,.btn-reset{display:none!important}
+  .card{box-shadow:none;break-inside:avoid}
+  details{break-inside:avoid}
+}
+:root{
+  --falha:var(--destructive);
+  --ok:var(--success);
+}
+.kpis{grid-template-columns:repeat(3,1fr)}
+.row{display:grid;grid-template-columns:230px minmax(0,1fr) 120px;gap:10px;align-items:center;padding:8px;margin:0 -8px;border-radius:6px;transition:background .12s,opacity .12s}
 .row.click{cursor:pointer}
 .row.click:hover{background:var(--secondary)}
 .row.sel{background:var(--secondary);outline:1px solid var(--ring)}
-.row.dim{opacity:.38}
-.row .nm{font-weight:600;font-size:13px}
+.row.dim{opacity:.58}
+.row .nm{font-weight:600;font-size:13px;min-width:0;overflow-wrap:anywhere}
 .row .nm small{display:block;font-weight:400;font-size:12px;color:var(--muted-foreground)}
 .bar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--foreground) 8%,transparent)}
-.bar span{display:block;height:100%;background:var(--falha)}
-.num{text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+.bar span{display:block;height:100%;background:var(--falha);transition:width .18s ease}
+.num{text-align:right;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .num b{font-size:13px}
-.tag{font-size:10.5px;font-weight:700;padding:2px 0;border-radius:4px;text-align:center;letter-spacing:.02em;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.arq-grupo+.arq-grupo{margin-top:14px}
+.arq-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:7px;background:var(--secondary);border:1px solid var(--border);margin-bottom:4px}
+.arq-head-nome{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--foreground);overflow-wrap:anywhere}
+.arq-head-meta{font-size:11.5px;color:var(--muted-foreground);white-space:nowrap;font-variant-numeric:tabular-nums}
 details{border-top:1px solid var(--border)}
 details:first-child{border-top:0}
-summary{list-style:none;display:grid;grid-template-columns:60px 1fr 130px 14px;gap:10px;align-items:center;padding:10px 0;cursor:pointer}
+summary{list-style:none;display:grid;grid-template-columns:60px minmax(0,1fr) auto 14px;gap:10px;align-items:center;padding:10px 6px;border-radius:6px;cursor:pointer;transition:background .12s}
+summary:hover{background:var(--secondary)}
 summary::-webkit-details-marker{display:none}
-summary .r{font-weight:600;font-size:13px}
-summary .r small{display:block;font-weight:400;font-size:12px;color:var(--muted-foreground)}
-summary .chev{transition:transform .15s;color:var(--muted-foreground)}
+summary .tag{width:60px}
+summary .r{font-weight:600;font-size:13px;min-width:0;overflow-wrap:anywhere}
+summary .r small{display:block;font-weight:400;font-size:12px;color:var(--muted-foreground);margin-top:1px}
+summary .chev{transition:transform .15s;color:var(--muted-foreground);text-align:center}
 details[open] summary .chev{transform:rotate(90deg)}
-.ev{margin:0 0 12px 70px;padding:10px 12px;background:var(--code-background);border:1px solid var(--border);border-radius:6px}
+.ev{margin:0 0 12px 70px;padding:10px 12px;background:var(--code-background);border:1px solid var(--border);border-radius:7px}
 .ev-info{font-size:12px;margin:0 0 8px}
-.ev ol{margin:0;padding-left:18px;font-family:var(--font-mono);font-size:12px;color:#e5e7eb}
-.ev li{margin:4px 0;word-break:break-word}
-.ev .fonte{font-size:12px;margin-top:8px}
-.vazio{padding:18px 0;text-align:center}
-@media (max-width:600px){
-  .filtro{position:static;box-shadow:none}
-  .kpis{grid-template-columns:1fr}
-  .row{grid-template-columns:1fr 96px}
-  .row .bar{grid-column:1/3;grid-row:2}
-  summary{grid-template-columns:56px 1fr 92px 14px}
+.ev ol{margin:0;padding-left:18px;font-family:var(--font-mono);font-size:12px;color:var(--code-foreground)}
+.ev li{margin:5px 0;word-break:break-word;line-height:1.5}
+.ev-loc{color:var(--warning-text);font-weight:600}
+.ev-bad{background:color-mix(in srgb,var(--destructive) 28%,transparent);color:var(--diff-old);padding:0 2px;border-radius:3px}
+.ev .fonte{font-size:12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+@media (max-width:760px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpis .kpi:last-child:nth-child(3){grid-column:1/-1}
+  .row{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px}
+  .row>.bar{grid-column:1/-1;grid-row:2}
+  summary{grid-template-columns:54px minmax(0,1fr) auto 14px;gap:8px;padding:10px 4px}
+  summary .tag{width:54px}
   .ev{margin-left:0}
-  .btn-reset{margin-left:0}
+}
+@media (max-width:340px){
+  .kpis{grid-template-columns:1fr}
 }
 </style></head><body>
 
+<nav class="topbar" aria-label="Alternar entre painéis">
+  <div class="nav-switch">
+    <a class="nav-link" href="auditoria.html" aria-current="page"><span class="nav-step">1</span>Auditoria (Antes)</a>
+    <a class="nav-link" href="limpeza.html"><span class="nav-step">2</span>Limpeza (Depois)</a>
+  </div>
+  <span class="topbar-hint"><span class="kbd">/</span> buscar · <span class="kbd">Esc</span> limpar</span>
+</nav>
+
 <div class="intro">
-  <h1>Auditoria de dados — Validações e evidências</h1>
-  <p class="muted">Conferência factual de tribunal.csv, hub.csv, pagamentos.json e apresentacoes.json contra o leiaute do tribunal, schema.sql, regra de prazo e conciliação entre bases.</p>
+  <div>
+    <h1>Auditoria de dados — Validações e evidências</h1>
+    <p class="muted">Conferência factual de tribunal.csv, hub.csv, pagamentos.json e apresentacoes.json contra o leiaute do tribunal, schema.sql, regra de prazo e conciliação entre bases.</p>
+  </div>
+  <div id="statusGeral"></div>
 </div>
 
 <div class="card filtro">
-  <div class="filtro-grupo">
-    <div class="filtro-label">Contrato / Origem</div>
-    <div class="chips" id="chipsContrato" role="group" aria-label="Contrato ou origem"></div>
+  <div class="filtro-grupo filtro-grid">
+    <div class="filtro-col">
+      <div class="filtro-label">Contrato / Origem</div>
+      <div class="chips" id="chipsContrato" role="group" aria-label="Contrato ou origem"></div>
+    </div>
+    <div class="filtro-col">
+      <div class="filtro-label">Arquivo</div>
+      <div class="chips" id="chipsArquivo" role="group" aria-label="Filtrar por arquivo"></div>
+    </div>
   </div>
   <div class="filtro-grupo">
     <div class="busca-linha">
-      <div class="busca-wrap">
-        <input type="search" id="busca" placeholder="Buscar processo, evento ou texto (ex.: ev-001, 0023456)" aria-label="Buscar registro ou texto">
-        <button type="button" class="busca-limpar" id="btnLimparBusca" title="Limpar busca" aria-label="Limpar busca" hidden>✕</button>
+      <div class="busca-col">
+        <div class="filtro-label">Busca</div>
+        <div class="busca-wrap">
+          <input type="search" id="busca" placeholder="Buscar processo, evento, regra ou texto (ex.: ev-001, 0023456, sao paulo)" aria-label="Buscar registro ou texto">
+          <button type="button" class="busca-limpar" id="btnLimparBusca" title="Limpar busca" aria-label="Limpar busca" hidden>✕</button>
+        </div>
       </div>
-      <div class="chips" id="chipsStatus" role="group" aria-label="Status da validação"></div>
+      <div class="filtro-col">
+        <div class="filtro-label">Status</div>
+        <div class="chips" id="chipsStatus" role="group" aria-label="Status da validação"></div>
+      </div>
     </div>
   </div>
   <div class="ativos" id="filtrosAtivos" hidden></div>
@@ -120,19 +251,38 @@ details[open] summary .chev{transform:rotate(90deg)}
 <div class="kpis" id="kpis"></div>
 
 <div class="card">
-  <h2>Evidências por contrato / origem</h2>
-  <p class="sub muted">Regras com falha agrupadas por contrato (clique para filtrar).</p>
+  <div class="sec-head">
+    <div class="sec-head-left">
+      <h2>Evidências por contrato / origem</h2>
+      <p class="sub muted" id="subContratos">Regras com falha agrupadas por contrato, ordenadas por evidências (clique para filtrar).</p>
+    </div>
+    <div class="sec-actions">
+      <div class="seg" role="group" aria-label="Métrica das barras" id="segMetrica">
+        <button type="button" data-metrica="evidencias" aria-pressed="true">Por evidências</button>
+        <button type="button" data-metrica="regras" aria-pressed="false">Por regras</button>
+      </div>
+    </div>
+  </div>
   <div id="contratos"></div>
 </div>
 
 <div class="card">
-  <h2 id="tituloLista">Validações e evidências</h2>
-  <p class="sub muted" id="subLista">Falhas ordenadas pelo nome do arquivo. Clique em uma validação para inspecionar os registros.</p>
+  <div class="sec-head">
+    <div class="sec-head-left">
+      <h2 id="tituloLista">Validações e evidências</h2>
+      <p class="sub muted" id="subLista">Falhas ordenadas pelo nome do arquivo. Clique em uma validação para inspecionar os registros.</p>
+    </div>
+    <div class="sec-actions">
+      <button type="button" class="btn-sec" id="btnToggleTodos">Expandir todos</button>
+    </div>
+  </div>
   <div id="lista"></div>
 </div>
 
+<div id="anuncio" class="sr-only" aria-live="polite"></div>
+
 <script>
-const D = {"resumo": {"total_validacoes": 23, "ok": 5, "falhas": 18, "total_evidencias": 43}, "resultados": [{"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "Estrutura: lista de objetos em JSON", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "evento_id: texto único", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 4: evento_id repetido 'ev-002' (primeira ocorrência no item 2) — registro idêntico", "Item 9: evento_id repetido 'ev-001' (primeira ocorrência no item 1) — campos divergentes (atualizado_em: '2025-03-10T10:00:00-03:00' -> '2025-03-11T09:00:00-03:00'; valor: 15000.0 -> 15500.0)"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 6 (ev-005): encontrado '00234562120208260053'", "Item 12 (ev-010): encontrado ''"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "valor: número", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 3, "evidencias": ["Item 2 (ev-002): encontrado '2.500,50' (tipo str)", "Item 4 (ev-002): encontrado '2.500,50' (tipo str)", "Item 5 (ev-004): encontrado None (tipo NoneType)"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "data_pagamento: formato AAAA-MM-DD", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 2 (ev-002): encontrado '10/04/2025'", "Item 4 (ev-002): encontrado '10/04/2025'"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "tipo: sempre 'pagamento'", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 8 (ev-007): esperado 'pagamento', encontrado 'estorno'"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "atualizado_em: data e hora válida", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "Codificação UTF-8", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: 0012345-10.2019.8.26.0053;Munic�pio de S�o Paulo;45.000,00", "Linha 3: 0023456-21.2020.8.26.0053;Munic�pio de S�o Paulo;30.000,00", "Linha 4: 0034567-32.2018.8.26.0405;Estado de S�o Paulo;12.500,00", "Linha 5: 0045678-43.2021.5.02.0011;Uni�o;9.800,00", "Linha 6: 0067890-65.2016.8.26.0053;Munic�pio de S�o Paulo;7.000,00"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "Delimitador vírgula (',') e colunas esperadas", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Esperado  : ['numero_processo', 'ente_devedor', 'valor_face']", "Encontrado: ['numero_processo;ente_devedor;valor_face']"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "numero_processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)", "arquivo": "data/raw/tribunal.csv", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "ente_devedor: texto não vazio", "arquivo": "data/raw/tribunal.csv", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "valor_face: número com ponto decimal", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: encontrado '45.000,00'", "Linha 3: encontrado '30.000,00'", "Linha 4: encontrado '12.500,00'", "Linha 5: encontrado '9.800,00'", "Linha 6: encontrado '7.000,00'"]}, {"origem": "data/raw/schema.sql", "validacao": "precatorio.numero_processo: até 20 caracteres (CHAR(20))", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: encontrado '0012345-10.2019.8.26.0053' (25 chars)", "Linha 3: encontrado '0023456-21.2020.8.26.0053' (25 chars)", "Linha 4: encontrado '0034567-32.2018.8.26.0405' (25 chars)", "Linha 5: encontrado '0045678-43.2021.5.02.0011' (25 chars)", "Linha 6: encontrado '0067890-65.2016.8.26.0053' (25 chars)"]}, {"origem": "data/raw/schema.sql", "validacao": "precatorio.numero_processo: até 20 caracteres (CHAR(20))", "arquivo": "data/raw/hub.csv", "status": "FALHA", "total_evidencias": 4, "evidencias": ["Linha 2: encontrado '0012345-10.2019.8.26.0053' (25 chars)", "Linha 4: encontrado '0034567-32.2018.8.26.0405' (25 chars)", "Linha 5: encontrado '0045678-43.2021.5.02.0011' (25 chars)", "Linha 6: encontrado '0056789-54.2017.4.03.6100' (25 chars)"]}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.valor: CHECK (valor > 0)", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 11 (ev-009): encontrado -200 (esperado > 0)"]}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.tipo: CHECK (tipo IN ('pagamento', 'estorno'))", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.precatorio_id: processo existente na base interna", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 12 (ev-010): processo '' não encontrado em data/raw/hub.csv", "Item 13 (ev-011): processo '0067890-65.2016.8.26.0053' não encontrado em data/raw/hub.csv"]}, {"origem": "docs/ENUNCIADO.md", "validacao": "Regra constitucional de prazo_pagamento (corte em 02/04, BRT)", "arquivo": "data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Linha 2 (0012345-10.2019.8.26.0053): apresentado_em='2025-04-02' (data BRT: 2025-04-02) -> esperado '2026-12-31', encontrado '2027-12-31'", "Linha 6 (0056789-54.2017.4.03.6100): apresentado_em='2025-04-03T01:00:00Z' (data BRT: 2025-04-02) -> esperado '2026-12-31', encontrado '2027-12-31'"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Cobertura de processos (presença nas duas bases)", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Processo '0067890-65.2016.8.26.0053' (linha 6 de data/raw/tribunal.csv): ausente em data/raw/hub.csv", "Processo '0056789-54.2017.4.03.6100' (linha 6 de data/raw/hub.csv): ausente em data/raw/tribunal.csv"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Formato do número do processo entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["tribunal (linha 3)='0023456-21.2020.8.26.0053' vs hub (linha 3)='00234562120208260053'"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Ente devedor entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["0012345-10.2019.8.26.0053 (tribunal L2 x hub L2): tribunal='Município de São Paulo' vs hub='MUNICIPIO DE SAO PAULO' (mesmo texto sem acento/caixa)", "0045678-43.2021.5.02.0011 (tribunal L5 x hub L5): tribunal='União' vs hub='Município de Santos' (textos diferentes mesmo sem acento/caixa)"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Valor de face entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["0023456-21.2020.8.26.0053 (tribunal L3 x hub L3): tribunal=30000.00 vs hub=31000.00 (diferença hub - tribunal: +1000.00)"]}, {"origem": "Conciliação (data/raw/apresentacoes.json x data/raw/hub.csv)", "validacao": "Cobertura e datas de apresentação entre bases", "arquivo": "data/raw/apresentacoes.json x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 6 (0067890-65.2016.8.26.0053): apresentado_em='2023-12-31' ausente em data/raw/hub.csv"]}]};
+const D = {"resumo": {"total_validacoes": 23, "ok": 5, "falhas": 18, "total_evidencias": 43}, "resultados": [{"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "Estrutura: lista de objetos em JSON", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "evento_id: texto único", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 4: evento_id repetido 'ev-002' (primeira ocorrência no item 2) — registro idêntico", "Item 9: evento_id repetido 'ev-001' (primeira ocorrência no item 1) — campos divergentes (atualizado_em: '2025-03-10T10:00:00-03:00' -\u003e '2025-03-11T09:00:00-03:00'; valor: 15000.0 -\u003e 15500.0)"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 6 (ev-005): encontrado '00234562120208260053'", "Item 12 (ev-010): encontrado ''"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "valor: número", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 3, "evidencias": ["Item 2 (ev-002): encontrado '2.500,50' (tipo str)", "Item 4 (ev-002): encontrado '2.500,50' (tipo str)", "Item 5 (ev-004): encontrado None (tipo NoneType)"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "data_pagamento: formato AAAA-MM-DD", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 2 (ev-002): encontrado '10/04/2025'", "Item 4 (ev-002): encontrado '10/04/2025'"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "tipo: sempre 'pagamento'", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 8 (ev-007): esperado 'pagamento', encontrado 'estorno'"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção pagamentos.json)", "validacao": "atualizado_em: data e hora válida", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "Codificação UTF-8", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: 0012345-10.2019.8.26.0053;Munic�pio de S�o Paulo;45.000,00", "Linha 3: 0023456-21.2020.8.26.0053;Munic�pio de S�o Paulo;30.000,00", "Linha 4: 0034567-32.2018.8.26.0405;Estado de S�o Paulo;12.500,00", "Linha 5: 0045678-43.2021.5.02.0011;Uni�o;9.800,00", "Linha 6: 0067890-65.2016.8.26.0053;Munic�pio de S�o Paulo;7.000,00"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "Delimitador vírgula (',') e colunas esperadas", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Esperado  : ['numero_processo', 'ente_devedor', 'valor_face']", "Encontrado: ['numero_processo;ente_devedor;valor_face']"]}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "numero_processo: formato CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)", "arquivo": "data/raw/tribunal.csv", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "ente_devedor: texto não vazio", "arquivo": "data/raw/tribunal.csv", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "docs/DOCUMENTACAO_TRIBUNAL.md (seção tribunal.csv)", "validacao": "valor_face: número com ponto decimal", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: encontrado '45.000,00'", "Linha 3: encontrado '30.000,00'", "Linha 4: encontrado '12.500,00'", "Linha 5: encontrado '9.800,00'", "Linha 6: encontrado '7.000,00'"]}, {"origem": "data/raw/schema.sql", "validacao": "precatorio.numero_processo: até 20 caracteres (CHAR(20))", "arquivo": "data/raw/tribunal.csv", "status": "FALHA", "total_evidencias": 5, "evidencias": ["Linha 2: encontrado '0012345-10.2019.8.26.0053' (25 chars)", "Linha 3: encontrado '0023456-21.2020.8.26.0053' (25 chars)", "Linha 4: encontrado '0034567-32.2018.8.26.0405' (25 chars)", "Linha 5: encontrado '0045678-43.2021.5.02.0011' (25 chars)", "Linha 6: encontrado '0067890-65.2016.8.26.0053' (25 chars)"]}, {"origem": "data/raw/schema.sql", "validacao": "precatorio.numero_processo: até 20 caracteres (CHAR(20))", "arquivo": "data/raw/hub.csv", "status": "FALHA", "total_evidencias": 4, "evidencias": ["Linha 2: encontrado '0012345-10.2019.8.26.0053' (25 chars)", "Linha 4: encontrado '0034567-32.2018.8.26.0405' (25 chars)", "Linha 5: encontrado '0045678-43.2021.5.02.0011' (25 chars)", "Linha 6: encontrado '0056789-54.2017.4.03.6100' (25 chars)"]}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.valor: CHECK (valor \u003e 0)", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 11 (ev-009): encontrado -200 (esperado \u003e 0)"]}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.tipo: CHECK (tipo IN ('pagamento', 'estorno'))", "arquivo": "data/raw/pagamentos.json", "status": "OK", "total_evidencias": 0, "evidencias": []}, {"origem": "data/raw/schema.sql", "validacao": "pagamento.precatorio_id: processo existente na base interna", "arquivo": "data/raw/pagamentos.json", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Item 12 (ev-010): processo '' não encontrado em data/raw/hub.csv", "Item 13 (ev-011): processo '0067890-65.2016.8.26.0053' não encontrado em data/raw/hub.csv"]}, {"origem": "docs/ENUNCIADO.md", "validacao": "Regra constitucional de prazo_pagamento (corte em 02/04, BRT)", "arquivo": "data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Linha 2 (0012345-10.2019.8.26.0053): apresentado_em='2025-04-02' (data BRT: 2025-04-02) -\u003e esperado '2026-12-31', encontrado '2027-12-31'", "Linha 6 (0056789-54.2017.4.03.6100): apresentado_em='2025-04-03T01:00:00Z' (data BRT: 2025-04-02) -\u003e esperado '2026-12-31', encontrado '2027-12-31'"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Cobertura de processos (presença nas duas bases)", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["Processo '0067890-65.2016.8.26.0053' (linha 6 de data/raw/tribunal.csv): ausente em data/raw/hub.csv", "Processo '0056789-54.2017.4.03.6100' (linha 6 de data/raw/hub.csv): ausente em data/raw/tribunal.csv"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Formato do número do processo entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["tribunal (linha 3)='0023456-21.2020.8.26.0053' vs hub (linha 3)='00234562120208260053'"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Ente devedor entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 2, "evidencias": ["0012345-10.2019.8.26.0053 (tribunal L2 x hub L2): tribunal='Município de São Paulo' vs hub='MUNICIPIO DE SAO PAULO' (mesmo texto sem acento/caixa)", "0045678-43.2021.5.02.0011 (tribunal L5 x hub L5): tribunal='União' vs hub='Município de Santos' (textos diferentes mesmo sem acento/caixa)"]}, {"origem": "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)", "validacao": "Valor de face entre bases", "arquivo": "data/raw/tribunal.csv x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["0023456-21.2020.8.26.0053 (tribunal L3 x hub L3): tribunal=30000.00 vs hub=31000.00 (diferença hub - tribunal: +1000.00)"]}, {"origem": "Conciliação (data/raw/apresentacoes.json x data/raw/hub.csv)", "validacao": "Cobertura e datas de apresentação entre bases", "arquivo": "data/raw/apresentacoes.json x data/raw/hub.csv", "status": "FALHA", "total_evidencias": 1, "evidencias": ["Item 6 (0067890-65.2016.8.26.0053): apresentado_em='2023-12-31' ausente em data/raw/hub.csv"]}]};
 const R = D.resultados;
 
 const CONTRATOS = [
@@ -143,9 +293,9 @@ const CONTRATOS = [
 ];
 
 const STATUS_OPCOES = [
-  {id:'FALHA', nome:'Somente falhas', cor:'var(--falha)'},
-  {id:'TODAS', nome:'Todas', cor:'var(--foreground)'},
-  {id:'OK', nome:'Somente OK', cor:'var(--ok)'}
+  {id:'FALHA', nome:'Somente falhas', cor:'var(--falha)', dot:true},
+  {id:'TODAS', nome:'Todas', cor:'var(--foreground)', dot:false},
+  {id:'OK', nome:'Somente OK', cor:'var(--ok)', dot:true}
 ];
 
 const ARQ = {
@@ -155,8 +305,56 @@ const ARQ = {
   'data/raw/apresentacoes.json':['apresentacoes.json','Datas de apresentação']
 };
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ARQUIVOS_BASE = ['apresentacoes.json','hub.csv','pagamentos.json','tribunal.csv'];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function destacarHtml(texto, qNorm) {
+  const s = String(texto ?? '');
+  if (!qNorm) return esc(s).replace(/\uFFFD/g, '<span class="ev-bad" title="Caractere inválido em UTF-8">\uFFFD</span>');
+  const chars = [...s];
+  let normStr = '';
+  const map = [];
+  for (let i = 0; i < chars.length; i++) {
+    const n = norm(chars[i]);
+    for (let j = 0; j < n.length; j++) {
+      normStr += n[j];
+      map.push(i);
+    }
+  }
+  const ranges = [];
+  let from = 0;
+  while (from <= normStr.length - qNorm.length) {
+    const idx = normStr.indexOf(qNorm, from);
+    if (idx === -1) break;
+    const origStart = map[idx];
+    const origEnd = map[idx + qNorm.length - 1] + 1;
+    if (ranges.length && origStart <= ranges[ranges.length - 1][1]) {
+      ranges[ranges.length - 1][1] = Math.max(ranges[ranges.length - 1][1], origEnd);
+    } else {
+      ranges.push([origStart, origEnd]);
+    }
+    from = idx + qNorm.length;
+  }
+  if (!ranges.length) return esc(s).replace(/\uFFFD/g, '<span class="ev-bad" title="Caractere inválido em UTF-8">\uFFFD</span>');
+  let out = '';
+  let cur = 0;
+  for (const [a, b] of ranges) {
+    if (a > cur) out += esc(chars.slice(cur, a).join(''));
+    out += `<mark>${esc(chars.slice(a, b).join(''))}</mark>`;
+    cur = b;
+  }
+  if (cur < chars.length) out += esc(chars.slice(cur).join(''));
+  return out.replace(/\uFFFD/g, '<span class="ev-bad" title="Caractere inválido em UTF-8">\uFFFD</span>');
+}
+
+function formatarEvidenciaHtml(ev, qNorm) {
+  const m = String(ev).match(/^((?:Linha \d+|Item \d+(?:\s*\([^)]+\))?|Processo '[^']+'|Esperado\s*|Encontrado):)(\s*.*)$/);
+  if (!m) return destacarHtml(ev, qNorm);
+  return `<span class="ev-loc">${destacarHtml(m[1], qNorm)}</span>${destacarHtml(m[2], qNorm)}`;
+}
 
 function contratoDe(origem) {
   if (origem.startsWith('docs/DOCUMENTACAO_TRIBUNAL')) return CONTRATOS[0];
@@ -172,91 +370,175 @@ function nomeArq(a) {
   return [p.join(' × '), 'Conciliação entre bases'];
 }
 
-const st = {contrato:'TODOS', status:'FALHA', busca:''};
+function arquivosEnvolvidos(a) {
+  return a.split(' x ').map(x => (ARQ[x] || [x.replace(/^data\/(?:raw\/)?/, '')])[0]);
+}
 
-function avaliarBusca(r, q) {
-  if (!q) {
-    return {casa: true, evidencias: r.evidencias, filtradas: false};
+function chaveRegra(r) {
+  return `${r.origem}|${r.arquivo}|${r.validacao}`;
+}
+
+const st = {
+  contrato: 'TODOS',
+  arquivo: 'TODOS',
+  status: 'FALHA',
+  metrica: 'evidencias',
+  busca: '',
+  abertosUsuario: new Set(),
+  fechadosNaBusca: new Set()
+};
+
+function regraEstaAberta(chave) {
+  return st.busca.trim().length > 0
+    ? !st.fechadosNaBusca.has(chave)
+    : st.abertosUsuario.has(chave);
+}
+
+function lerHash() {
+  const h = location.hash.replace(/^#/, '');
+  if (!h) return;
+  const p = new URLSearchParams(h);
+  if (p.has('contrato')) st.contrato = p.get('contrato') || 'TODOS';
+  if (p.has('arquivo')) st.arquivo = p.get('arquivo') || 'TODOS';
+  if (p.has('status') && ['FALHA','TODAS','OK'].includes(p.get('status'))) st.status = p.get('status');
+  if (p.has('metrica') && ['evidencias','regras'].includes(p.get('metrica'))) st.metrica = p.get('metrica');
+  if (p.has('q')) {
+    st.busca = p.get('q') || '';
+    document.getElementById('busca').value = st.busca;
   }
-  const evMatch = r.evidencias.filter(e => e.toLowerCase().includes(q));
+}
+
+function gravarHash() {
+  const p = new URLSearchParams();
+  if (st.contrato !== 'TODOS') p.set('contrato', st.contrato);
+  if (st.arquivo !== 'TODOS') p.set('arquivo', st.arquivo);
+  if (st.status !== 'FALHA') p.set('status', st.status);
+  if (st.metrica !== 'evidencias') p.set('metrica', st.metrica);
+  if (st.busca.trim()) p.set('q', st.busca.trim());
+  const novo = p.toString() ? `#${p.toString()}` : '';
+  if (location.hash !== novo) {
+    try { history.replaceState(null, '', novo || location.pathname + location.search); } catch {}
+  }
+}
+
+function avaliarBusca(r, qNorm) {
+  if (!qNorm) return {casa: true, evidencias: r.evidencias, filtradas: false};
+  const evMatch = r.evidencias.filter(e => norm(e).includes(qNorm));
   const c = contratoDe(r.origem);
   const [nArq] = nomeArq(r.arquivo);
-  const metaCasa = [r.validacao, r.arquivo, nArq, r.origem, c.nome]
-    .some(v => v.toLowerCase().includes(q));
-  if (metaCasa) {
-    return {casa: true, evidencias: r.evidencias, filtradas: false};
-  }
-  if (evMatch.length > 0) {
-    return {casa: true, evidencias: evMatch, filtradas: evMatch.length < r.evidencias.length};
-  }
+  const metaCasa = [r.validacao, r.arquivo, nArq, r.origem, c.nome].some(v => norm(v).includes(qNorm));
+  if (metaCasa) return {casa: true, evidencias: r.evidencias, filtradas: false};
+  if (evMatch.length > 0) return {casa: true, evidencias: evMatch, filtradas: evMatch.length < r.evidencias.length};
   return {casa: false, evidencias: [], filtradas: false};
 }
 
+function preservarFoco(fn) {
+  const active = document.activeElement;
+  let selector = null;
+  if (active && active !== document.body && active.id !== 'busca') {
+    for (const attr of ['data-contrato','data-arquivo','data-status','data-metrica','data-contrato-bar','data-limpa']) {
+      if (active.hasAttribute(attr)) {
+        selector = `[${attr}="${CSS.escape(active.getAttribute(attr))}"]`;
+        break;
+      }
+    }
+    if (!selector && active.id) selector = `#${CSS.escape(active.id)}`;
+  }
+  fn();
+  if (selector) {
+    const next = document.querySelector(selector);
+    if (next) next.focus({preventScroll: true});
+  }
+}
+
+function atualizarRotuloToggleTodos() {
+  const btn = document.getElementById('btnToggleTodos');
+  if (!btn) return;
+  const chaves = [...document.querySelectorAll('#lista details[data-regra]')].map(el => el.dataset.regra);
+  btn.hidden = chaves.length === 0;
+  const todosAbertos = chaves.length > 0 && chaves.every(k => regraEstaAberta(k));
+  btn.textContent = todosAbertos ? 'Recolher todos' : 'Expandir todos';
+}
+
 function render() {
-  const q = st.busca.trim().toLowerCase();
-  const btnLimparBusca = document.getElementById('btnLimparBusca');
-  btnLimparBusca.hidden = st.busca.length === 0;
+  const qNorm = norm(st.busca.trim());
+  document.getElementById('btnLimparBusca').hidden = st.busca.length === 0;
+
+  const totalGeral = D.resumo.total_validacoes;
+  const falhasGeral = D.resumo.falhas;
+  const okGeral = D.resumo.ok;
+  document.getElementById('statusGeral').innerHTML = falhasGeral > 0
+    ? `<div class="status-geral" style="--c:var(--falha)">✕ ${falhasGeral}/${totalGeral} regras com falha</div>`
+    : `<div class="status-geral" style="--c:var(--ok)">✓ ${okGeral}/${totalGeral} regras OK</div>`;
 
   const avaliados = R.map(r => {
-    const b = avaliarBusca(r, q);
+    const b = avaliarBusca(r, qNorm);
     const c = contratoDe(r.origem);
-    return {r, c, casa: b.casa, evVisiveis: b.evidencias, evFiltradas: b.filtradas};
+    const arqs = arquivosEnvolvidos(r.arquivo);
+    return {r, c, arqs, chave: chaveRegra(r), casa: b.casa, evVisiveis: b.evidencias, evFiltradas: b.filtradas};
   });
 
   const aposBusca = avaliados.filter(x => x.casa);
   const passaStatus = x => st.status === 'TODAS' || x.r.status === st.status;
-  const noStatusAposBusca = aposBusca.filter(passaStatus);
-  const falhasAposBusca = aposBusca.filter(x => x.r.status === 'FALHA');
+  const passaContrato = x => st.contrato === 'TODOS' || x.c.id === st.contrato;
+  const passaArquivo = x => st.arquivo === 'TODOS' || x.arqs.includes(st.arquivo);
 
-  const regrasEscopo = aposBusca.filter(x =>
-    st.contrato === 'TODOS' || x.c.id === st.contrato
-  );
-  const falhasEscopo = regrasEscopo.filter(x => x.r.status === 'FALHA');
-
-  // Chips de contrato / origem (acompanham busca e status selecionado)
   const contratosPresentes = [];
   const vistos = new Set();
-  for (const c of CONTRATOS) {
-    vistos.add(c.id);
-    contratosPresentes.push(c);
-  }
+  for (const c of CONTRATOS) { vistos.add(c.id); contratosPresentes.push(c); }
   for (const x of avaliados) {
-    if (!vistos.has(x.c.id)) {
-      vistos.add(x.c.id);
-      contratosPresentes.push(x.c);
+    if (!vistos.has(x.c.id)) { vistos.add(x.c.id); contratosPresentes.push(x.c); }
+  }
+
+  const arquivosPresentes = [...ARQUIVOS_BASE];
+  for (const x of avaliados) {
+    for (const a of x.arqs) {
+      if (!arquivosPresentes.includes(a)) arquivosPresentes.push(a);
     }
   }
-  const chipsContratoHtml = [
-    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.contrato === 'TODOS'}" data-contrato="TODOS">Todos<span class="n">${noStatusAposBusca.length}</span></button>`,
+
+  const baseContrato = aposBusca.filter(x => passaStatus(x) && passaArquivo(x));
+  document.getElementById('chipsContrato').innerHTML = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.contrato === 'TODOS'}" data-contrato="TODOS">Todos<span class="n">${baseContrato.length}</span></button>`,
     ...contratosPresentes.map(c => {
-      const n = noStatusAposBusca.filter(x => x.c.id === c.id).length;
+      const n = baseContrato.filter(x => x.c.id === c.id).length;
       return `<button type="button" class="chip" style="--c:var(--accent)" aria-pressed="${st.contrato === c.id}" data-contrato="${esc(c.id)}">${esc(c.nome)}<span class="n">${n}</span></button>`;
     })
   ].join('');
-  document.getElementById('chipsContrato').innerHTML = chipsContratoHtml;
 
-  // Chips de status
-  const contStatus = {
-    FALHA: falhasEscopo.length,
-    TODAS: regrasEscopo.length,
-    OK: regrasEscopo.length - falhasEscopo.length
-  };
-  document.getElementById('chipsStatus').innerHTML = STATUS_OPCOES.map(op =>
-    `<button type="button" class="chip" style="--c:${op.cor}" aria-pressed="${st.status === op.id}" data-status="${op.id}">${op.nome}<span class="n">${contStatus[op.id]}</span></button>`
-  ).join('');
+  const baseArquivo = aposBusca.filter(x => passaStatus(x) && passaContrato(x));
+  document.getElementById('chipsArquivo').innerHTML = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.arquivo === 'TODOS'}" data-arquivo="TODOS">Todos<span class="n">${baseArquivo.length}</span></button>`,
+    ...arquivosPresentes.map(a => {
+      const n = baseArquivo.filter(x => x.arqs.includes(a)).length;
+      return `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.arquivo === a}" data-arquivo="${esc(a)}"><span class="mono">${esc(a)}</span><span class="n">${n}</span></button>`;
+    })
+  ].join('');
 
-  // Pílulas de filtros ativos
+  const regrasEscopo = aposBusca.filter(x => passaContrato(x) && passaArquivo(x));
+  const falhasEscopo = regrasEscopo.filter(x => x.r.status === 'FALHA');
+  const okEscopo = regrasEscopo.length - falhasEscopo.length;
+
+  const contStatus = {FALHA: falhasEscopo.length, TODAS: regrasEscopo.length, OK: okEscopo};
+  document.getElementById('chipsStatus').innerHTML = STATUS_OPCOES.map(op => {
+    const dot = op.dot ? `<span class="dot" style="background:${op.cor}"></span>` : '';
+    return `<button type="button" class="chip" style="--c:${op.cor}" aria-pressed="${st.status === op.id}" data-status="${op.id}">${dot}${op.nome}<span class="n">${contStatus[op.id]}</span></button>`;
+  }).join('');
+
   const pills = [];
   if (st.contrato !== 'TODOS') {
     const info = contratosPresentes.find(c => c.id === st.contrato);
-    pills.push(`<span class="pill">Contrato: <b>${esc(info ? info.nome : st.contrato)}</b><button type="button" data-limpa="contrato" title="Remover filtro de contrato" aria-label="Remover filtro de contrato">✕</button></span>`);
+    pills.push(`<span class="pill">Contrato: <b>${esc(info ? info.nome : st.contrato)}</b><button type="button" data-limpa="contrato" aria-label="Remover filtro de contrato">✕</button></span>`);
+  }
+  if (st.arquivo !== 'TODOS') {
+    pills.push(`<span class="pill">Arquivo: <b class="mono">${esc(st.arquivo)}</b><button type="button" data-limpa="arquivo" aria-label="Remover filtro de arquivo">✕</button></span>`);
   }
   if (st.status !== 'FALHA') {
     const op = STATUS_OPCOES.find(o => o.id === st.status);
-    pills.push(`<span class="pill">Status: <b>${esc(op ? op.nome : st.status)}</b><button type="button" data-limpa="status" title="Voltar para somente falhas" aria-label="Voltar para somente falhas">✕</button></span>`);
+    pills.push(`<span class="pill">Status: <b>${esc(op ? op.nome : st.status)}</b><button type="button" data-limpa="status" aria-label="Voltar para somente falhas">✕</button></span>`);
   }
-  if (q) {
-    pills.push(`<span class="pill">Busca: <b>${esc(st.busca.trim())}</b><button type="button" data-limpa="busca" title="Limpar busca" aria-label="Limpar busca">✕</button></span>`);
+  if (qNorm) {
+    pills.push(`<span class="pill">Busca: <b>${esc(st.busca.trim())}</b><button type="button" data-limpa="busca" aria-label="Limpar busca">✕</button></span>`);
   }
   const ativosEl = document.getElementById('filtrosAtivos');
   if (pills.length) {
@@ -267,33 +549,71 @@ function render() {
     ativosEl.innerHTML = '';
   }
 
-  // KPIs
   const totalEv = falhasEscopo.reduce((acc, x) => acc + x.evVisiveis.length, 0);
   const nArq = new Set(falhasEscopo.map(x => x.r.arquivo)).size;
-  document.getElementById('kpis').innerHTML = [
-    [`${falhasEscopo.length}<small> de ${regrasEscopo.length}</small>`, 'regras com falha', falhasEscopo.length ? 'var(--falha)' : 'var(--ok)'],
-    [totalEv, totalEv === 1 ? 'evidência encontrada' : 'evidências encontradas', 'var(--foreground)'],
-    [nArq, nArq === 1 ? 'arquivo / comparação afetado' : 'arquivos / comparações afetados', 'var(--foreground)']
-  ].map(([v, l, c]) => `<div class="card kpi"><div class="v" style="color:${c}">${v}</div><div class="l muted">${l}</div></div>`).join('');
+  const nContratosAfetados = new Set(falhasEscopo.map(x => x.c.id)).size;
+  const pctFalha = regrasEscopo.length ? Math.round((falhasEscopo.length / regrasEscopo.length) * 100) : 0;
+  const mediaEv = falhasEscopo.length ? (totalEv / falhasEscopo.length).toFixed(1).replace('.', ',') : '0';
 
-  // Gráfico: Evidências por contrato / origem (clicável)
+  const barRegras = regrasEscopo.length
+    ? `<div class="kpi-bar" aria-hidden="true">${falhasEscopo.length ? `<span style="width:${(falhasEscopo.length / regrasEscopo.length) * 100}%;background:var(--falha)"></span>` : ''}${okEscopo ? `<span style="width:${(okEscopo / regrasEscopo.length) * 100}%;background:var(--ok)"></span>` : ''}</div>`
+    : '<div class="kpi-bar" aria-hidden="true"></div>';
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="card kpi">
+      <div>
+        <div class="v" style="color:${falhasEscopo.length ? 'var(--falha)' : 'var(--ok)'}">${falhasEscopo.length}<small> de ${regrasEscopo.length}</small></div>
+        <div class="l">Regras com falha</div>
+        <div class="d">${okEscopo} OK · ${pctFalha}% com falha</div>
+      </div>
+      ${barRegras}
+    </div>
+    <div class="card kpi">
+      <div>
+        <div class="v">${totalEv}</div>
+        <div class="l">${totalEv === 1 ? 'Evidência encontrada' : 'Evidências encontradas'}</div>
+        <div class="d">Média de ${mediaEv} por regra com falha</div>
+      </div>
+    </div>
+    <div class="card kpi">
+      <div>
+        <div class="v">${nArq}</div>
+        <div class="l">${nArq === 1 ? 'Arquivo / comparação afetado' : 'Arquivos / comparações afetados'}</div>
+        <div class="d">Em ${plural(nContratosAfetados, 'contrato auditado', 'contratos auditados')}</div>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('#segMetrica button').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.metrica === st.metrica));
+  });
+  document.getElementById('subContratos').textContent = st.metrica === 'evidencias'
+    ? 'Falhas agrupadas por contrato, proporcionais ao total de evidências (clique para filtrar).'
+    : 'Falhas agrupadas por contrato, proporcionais ao número de regras com falha (clique para filtrar).';
+
+  const falhasGrafico = aposBusca.filter(x => x.r.status === 'FALHA' && passaArquivo(x));
   const porContrato = {};
-  for (const x of falhasAposBusca) {
+  for (const x of falhasGrafico) {
     const item = (porContrato[x.c.id] ??= {id: x.c.id, nome: x.c.nome, desc: x.c.desc, regras: 0, occ: 0});
     item.regras += 1;
     item.occ += x.evVisiveis.length;
   }
-  const listaContratos = Object.values(porContrato).sort((a, b) => b.regras - a.regras || b.occ - a.occ);
-  const maxC = Math.max(1, ...listaContratos.map(x => x.regras));
+  const listaContratos = Object.values(porContrato).sort((a, b) =>
+    st.metrica === 'evidencias'
+      ? (b.occ - a.occ || b.regras - a.regras)
+      : (b.regras - a.regras || b.occ - a.occ)
+  );
+  const maxVal = Math.max(1, ...listaContratos.map(x => st.metrica === 'evidencias' ? x.occ : x.regras));
   document.getElementById('contratos').innerHTML = listaContratos.length
     ? listaContratos.map(c => {
         const ativo = st.contrato === c.id;
         const cls = ativo ? 'sel' : (st.contrato !== 'TODOS' ? 'dim' : '');
-        return `<div class="row click ${cls}" role="button" tabindex="0" aria-pressed="${ativo}" data-contrato-bar="${esc(c.id)}" title="Clique para filtrar por contrato"><div class="nm">${esc(c.nome)}<small>${esc(c.desc)}</small></div><div><div class="bar"><span style="width:${c.regras / maxC * 100}%"></span></div></div><div class="num"><b>${plural(c.regras, 'regra', 'regras')}</b><br><span class="muted">${c.occ} evid.</span></div></div>`;
+        const valor = st.metrica === 'evidencias' ? c.occ : c.regras;
+        const primario = st.metrica === 'evidencias' ? plural(c.occ, 'evidência', 'evidências') : plural(c.regras, 'regra', 'regras');
+        const secundario = st.metrica === 'evidencias' ? plural(c.regras, 'regra', 'regras') : `${c.occ} evid.`;
+        return `<div class="row click ${cls}" role="button" tabindex="0" aria-pressed="${ativo}" data-contrato-bar="${esc(c.id)}" title="Clique para filtrar por contrato"><div class="nm">${esc(c.nome)}<small>${esc(c.desc)}</small></div><div class="bar"><span style="width:${(valor / maxVal) * 100}%"></span></div><div class="num"><b>${primario}</b><br><span class="muted">${secundario}</span></div></div>`;
       }).join('')
-    : '<div class="vazio muted">Nenhuma falha encontrada para este filtro.</div>';
+    : '<div class="vazio">Nenhuma falha encontrada para este filtro.</div>';
 
-  // Lista de validações e evidências (ordenada pelo nome do arquivo)
   const visiveis = regrasEscopo
     .filter(passaStatus)
     .sort((a, b) => {
@@ -312,12 +632,33 @@ function render() {
       : st.status === 'TODAS'
         ? 'Falhas primeiro, depois validações OK — ordenadas pelo nome do arquivo.'
         : 'Falhas ordenadas pelo nome do arquivo. Clique em uma validação para inspecionar os registros.';
-  document.getElementById('lista').innerHTML = visiveis.length
-    ? visiveis.map(x => {
+
+  if (!visiveis.length) {
+    document.getElementById('lista').innerHTML = `<div class="vazio">Nenhuma validação encontrada para os filtros atuais.<div class="vazio-actions"><button type="button" class="btn-sec" id="limparFiltros">Limpar filtros</button></div></div>`;
+  } else {
+    const grupos = [];
+    let atual = null;
+    for (const x of visiveis) {
+      const [nArq, descArq] = nomeArq(x.r.arquivo);
+      const grupoKey = `${x.r.status}|${nArq}`;
+      if (!atual || atual.key !== grupoKey) {
+        atual = {key: grupoKey, nome: nArq, desc: descArq, status: x.r.status, itens: []};
+        grupos.push(atual);
+      }
+      atual.itens.push(x);
+    }
+
+    document.getElementById('lista').innerHTML = grupos.map(g => {
+      const totEvGrupo = g.itens.reduce((acc, x) => acc + x.evVisiveis.length, 0);
+      const metaGrupo = g.status === 'FALHA'
+        ? `${plural(g.itens.length, 'falha', 'falhas')} · ${plural(totEvGrupo, 'evidência', 'evidências')}`
+        : `${plural(g.itens.length, 'validação OK', 'validações OK')}`;
+      const itensHtml = g.itens.map(x => {
         const r = x.r;
         const ehFalha = r.status === 'FALHA';
         const cor = ehFalha ? 'var(--falha)' : 'var(--ok)';
         const [nArq] = nomeArq(r.arquivo);
+        const aberto = regraEstaAberta(x.chave);
         const contagemResumo = !ehFalha
           ? '<span class="muted">Sem falhas</span>'
           : (x.evFiltradas
@@ -327,67 +668,134 @@ function render() {
           ? `<div class="ev-info muted">Mostrando ${x.evVisiveis.length} de ${r.total_evidencias} evidências correspondentes à busca.</div>`
           : '';
         const corpoEv = x.evVisiveis.length
-          ? `${notaBusca}<ol>${x.evVisiveis.map(e => `<li>${esc(e)}</li>`).join('')}</ol>`
+          ? `${notaBusca}<ol>${x.evVisiveis.map(e => `<li>${formatarEvidenciaHtml(e, qNorm)}</li>`).join('')}</ol>`
           : '<span class="muted">Nenhuma falha encontrada.</span>';
-        return `<details${q ? ' open' : ''}><summary><div class="tag" style="--c:${cor}">${ehFalha ? 'FALHA' : 'OK'}</div><div class="r">${esc(r.validacao)}<small>${esc(nArq)} · ${esc(x.c.nome)}</small></div><div class="num">${contagemResumo}</div><div class="chev">›</div></summary><div class="ev">${corpoEv}<div class="fonte muted">Origem: ${esc(r.origem)}</div></div></details>`;
-      }).join('')
-    : '<div class="vazio muted">Nenhuma validação encontrada para os filtros atuais.</div>';
+        return `<details data-regra="${esc(x.chave)}"${aberto ? ' open' : ''}><summary><div class="tag" style="--c:${cor}">${ehFalha ? 'FALHA' : 'OK'}</div><div class="r">${destacarHtml(r.validacao, qNorm)}<small>${destacarHtml(nArq, qNorm)} · ${destacarHtml(x.c.nome, qNorm)}</small></div><div class="num">${contagemResumo}</div><div class="chev" aria-hidden="true">›</div></summary><div class="ev">${corpoEv}<div class="fonte muted">Origem: ${destacarHtml(r.origem, qNorm)}</div></div></details>`;
+      }).join('');
+      return `<div class="arq-grupo"><div class="arq-head"><span class="arq-head-nome">${destacarHtml(g.nome, qNorm)}</span><span class="arq-head-meta">${esc(metaGrupo)}</span></div>${itensHtml}</div>`;
+    }).join('');
+  }
+
+  atualizarRotuloToggleTodos();
+  gravarHash();
+  document.getElementById('anuncio').textContent = `${plural(visiveis.length, 'validação exibida', 'validações exibidas')}.`;
 }
 
 function alternarContrato(id) {
   st.contrato = id === 'TODOS' ? 'TODOS' : (st.contrato === id ? 'TODOS' : id);
-  render();
+  preservarFoco(render);
+}
+
+function limparTodos() {
+  st.contrato = 'TODOS';
+  st.arquivo = 'TODOS';
+  st.status = 'FALHA';
+  st.busca = '';
+  st.fechadosNaBusca.clear();
+  document.getElementById('busca').value = '';
 }
 
 document.addEventListener('click', e => {
+  const sum = e.target.closest('#lista details > summary');
+  if (sum) {
+    const det = sum.parentElement;
+    const chave = det?.dataset?.regra;
+    if (chave) {
+      const vaiAbrir = !det.open;
+      if (st.busca.trim().length > 0) {
+        if (vaiAbrir) st.fechadosNaBusca.delete(chave);
+        else st.fechadosNaBusca.add(chave);
+      } else {
+        if (vaiAbrir) st.abertosUsuario.add(chave);
+        else st.abertosUsuario.delete(chave);
+      }
+      setTimeout(atualizarRotuloToggleTodos, 0);
+    }
+    return;
+  }
+
   const chipC = e.target.closest('[data-contrato]');
-  if (chipC) {
-    const id = chipC.dataset.contrato;
-    st.contrato = id;
-    render();
+  if (chipC) { alternarContrato(chipC.dataset.contrato); return; }
+
+  const chipA = e.target.closest('[data-arquivo]');
+  if (chipA) {
+    const v = chipA.dataset.arquivo;
+    st.arquivo = v === 'TODOS' ? 'TODOS' : (st.arquivo === v ? 'TODOS' : v);
+    preservarFoco(render);
     return;
   }
+
   const chipS = e.target.closest('[data-status]');
-  if (chipS) {
-    st.status = chipS.dataset.status;
-    render();
+  if (chipS) { st.status = chipS.dataset.status; preservarFoco(render); return; }
+
+  const segM = e.target.closest('[data-metrica]');
+  if (segM) { st.metrica = segM.dataset.metrica; preservarFoco(render); return; }
+
+  if (e.target.closest('#btnToggleTodos')) {
+    const chaves = [...document.querySelectorAll('#lista details[data-regra]')].map(el => el.dataset.regra);
+    const todosAbertos = chaves.every(k => regraEstaAberta(k));
+    if (st.busca.trim().length > 0) {
+      if (todosAbertos) chaves.forEach(k => st.fechadosNaBusca.add(k));
+      else chaves.forEach(k => st.fechadosNaBusca.delete(k));
+    } else {
+      if (todosAbertos) chaves.forEach(k => st.abertosUsuario.delete(k));
+      else chaves.forEach(k => st.abertosUsuario.add(k));
+    }
+    preservarFoco(render);
     return;
   }
+
   const limpa = e.target.closest('[data-limpa]');
   if (limpa) {
     const alvo = limpa.dataset.limpa;
     if (alvo === 'contrato') st.contrato = 'TODOS';
+    else if (alvo === 'arquivo') st.arquivo = 'TODOS';
     else if (alvo === 'status') st.status = 'FALHA';
     else if (alvo === 'busca') {
       st.busca = '';
+      st.fechadosNaBusca.clear();
       document.getElementById('busca').value = '';
     }
-    render();
+    preservarFoco(render);
     return;
   }
+
   if (e.target.closest('#limparFiltros')) {
-    st.contrato = 'TODOS';
-    st.status = 'FALHA';
-    st.busca = '';
-    document.getElementById('busca').value = '';
-    render();
+    limparTodos();
+    preservarFoco(render);
     return;
   }
+
   if (e.target.closest('#btnLimparBusca')) {
     st.busca = '';
+    st.fechadosNaBusca.clear();
     const input = document.getElementById('busca');
     input.value = '';
     input.focus();
     render();
     return;
   }
+
   const barC = e.target.closest('[data-contrato-bar]');
-  if (barC) {
-    alternarContrato(barC.dataset.contratoBar);
-  }
+  if (barC) { alternarContrato(barC.dataset.contratoBar); }
 });
 
 document.addEventListener('keydown', e => {
+  const inputBusca = document.getElementById('busca');
+  if (e.key === '/' && document.activeElement !== inputBusca && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    inputBusca.focus();
+    inputBusca.select();
+    return;
+  }
+  if (e.key === 'Escape' && document.activeElement === inputBusca && st.busca) {
+    e.preventDefault();
+    st.busca = '';
+    st.fechadosNaBusca.clear();
+    inputBusca.value = '';
+    render();
+    return;
+  }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   const barC = e.target.closest('[data-contrato-bar]');
   if (barC) {
@@ -398,8 +806,12 @@ document.addEventListener('keydown', e => {
 
 document.getElementById('busca').addEventListener('input', e => {
   st.busca = e.target.value;
+  st.fechadosNaBusca.clear();
   render();
 });
 
+window.addEventListener('hashchange', () => { lerHash(); render(); });
+
+lerHash();
 render();
 </script></body></html>
