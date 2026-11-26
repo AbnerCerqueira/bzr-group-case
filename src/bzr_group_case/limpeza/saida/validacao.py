@@ -1,6 +1,7 @@
 import csv
 import io
 import re
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
@@ -284,6 +285,7 @@ def _validar_prazos_precatorios(csv_precatorios: _CsvLido) -> VerificacaoSaida:
 def _validar_integridade_pagamentos(
     csv_pagamentos: _CsvLido,
     chaves_precatorios: set[str],
+    chaves_hub: AbstractSet[str],
 ) -> VerificacaoSaida:
     regra = "Integridade de pagamentos_limpos.csv"
     if not _colunas_presentes(csv_pagamentos, COLUNAS_PAGAMENTOS):
@@ -325,6 +327,11 @@ def _validar_integridade_pagamentos(
             detalhes.append(
                 f"L{num_linha} ({evento_id}): FK inválida — processo {processo!r} "
                 "ausente em precatorios_limpos.csv."
+            )
+        elif processo not in chaves_hub:
+            detalhes.append(
+                f"L{num_linha} ({evento_id}): FK inválida — processo {processo!r} "
+                "ausente no hub.csv."
             )
 
         if tipo not in _TIPOS_VALIDOS:
@@ -417,7 +424,9 @@ def validar_base_limpa(
     )
     check_prazos = _validar_prazos_precatorios(csv_precatorios)
     check_pagamentos = _validar_integridade_pagamentos(
-        csv_pagamentos, chaves_precatorios
+        csv_pagamentos,
+        chaves_precatorios,
+        precatorios.chaves_hub,
     )
     check_conservacao = _validar_conservacao(
         csv_precatorios,
