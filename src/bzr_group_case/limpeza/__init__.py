@@ -36,8 +36,15 @@ from bzr_group_case.limpeza.pagamentos import (
 )
 from bzr_group_case.limpeza.pipeline import DIRETORIO_SAIDA, executar_limpeza
 from bzr_group_case.limpeza.precatorios import conciliar_precatorios
+from bzr_group_case.limpeza.saida import (
+    CAMINHO_PADRAO_HTML,
+    gerar_relatorio_html,
+    salvar_relatorio_html,
+    serializar_resultado_limpeza,
+)
 
 __all__ = [
+    "CAMINHO_PADRAO_HTML",
     "CategoriaOcorrencia",
     "DIRETORIO_DADOS",
     "DIRETORIO_SAIDA",
@@ -68,7 +75,10 @@ __all__ = [
     "extrair_data_civil_brasilia",
     "extrair_digitos_cnj",
     "formatar_cnj",
+    "gerar_relatorio_html",
     "limpar_pagamentos",
     "normalizar_cnj",
     "resumir_valor_liquido_arquivo",
+    "salvar_relatorio_html",
+    "serializar_resultado_limpeza",
 ]

@@ -1,9 +1,9 @@
 import argparse
 from collections.abc import Sequence
-from pathlib import Path
 
-from bzr_group_case.comum import DIRETORIO_DADOS, DIRETORIO_SAIDA, rotulo_arquivo
+from bzr_group_case.comum import rotulo_arquivo
 from bzr_group_case.limpeza.pipeline import executar_limpeza
+from bzr_group_case.limpeza.saida import salvar_relatorio_html
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -11,30 +11,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         description="Executa o pipeline de limpeza e conciliação de precatórios."
     )
     parser.add_argument(
-        "--entrada",
-        type=Path,
-        default=DIRETORIO_DADOS,
-        help="diretório com os arquivos brutos (padrão: data/raw)",
-    )
-    parser.add_argument(
-        "--saida",
-        type=Path,
-        default=DIRETORIO_SAIDA,
-        help="diretório de destino dos arquivos limpos (padrão: data/clean)",
+        "--html",
+        action="store_true",
+        help="gera também a visualização interativa em docs/limpeza.html",
     )
     args = parser.parse_args(argv)
 
-    try:
-        resultado = executar_limpeza(
-            diretorio_dados=args.entrada,
-            diretorio_saida=args.saida,
-        )
-    except ValueError as erro:
-        parser.error(str(erro))
+    resultado = executar_limpeza()
 
     print("Arquivos gerados:")
     for arquivo in resultado.arquivos_gerados:
         print(f"  - {rotulo_arquivo(arquivo)}")
+
+    if args.html:
+        destino = salvar_relatorio_html(resultado)
+        print(f"Relatório HTML gerado em {rotulo_arquivo(destino)}")
 
     print(
         f"Resumo: {len(resultado.precatorios.precatorios)} precatórios, "

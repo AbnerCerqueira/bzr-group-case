@@ -1,0 +1,1342 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Limpeza e conciliação de precatórios</title><style>
+/*__BASE_CSS__*/
+.kpis{grid-template-columns:repeat(4,1fr)}
+.filtro-escopo-dim{opacity:.55;transition:opacity .15s}
+.filtro-nota{font-size:11.5px;color:var(--muted-foreground);margin-top:8px;padding:6px 10px;border-radius:6px;background:var(--code-background);border:1px solid var(--border)}
+.filtro-nota[hidden]{display:none}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.tab{font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--muted-foreground);border-radius:8px;padding:7px 13px;display:inline-flex;gap:7px;align-items:center;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
+.tab:hover{background:var(--secondary);color:var(--foreground)}
+.tab[aria-selected=true]{background:var(--secondary);color:var(--foreground);border-color:var(--border);font-weight:650}
+.tab .cnt{font-size:11.5px;font-variant-numeric:tabular-nums;padding:1px 7px;border-radius:999px;background:var(--code-background);color:var(--muted-foreground);border:1px solid var(--border)}
+.tab[aria-selected=true] .cnt{color:var(--foreground)}
+.tag-code{display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;letter-spacing:.03em;color:var(--code-foreground);background:var(--secondary);border:1px solid var(--border-strong);white-space:nowrap}
+.tag-code-active{color:var(--foreground);background:color-mix(in srgb,var(--foreground) 16%,var(--secondary));border-color:var(--foreground)}
+.tag-code-dim{opacity:.58}
+.tag-premissa{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:650;padding:1px 6px;border-radius:5px;letter-spacing:.02em;color:var(--premissa-text);background:color-mix(in srgb,var(--premissa) 10%,transparent);border:1px dashed color-mix(in srgb,var(--premissa) 55%,transparent);white-space:nowrap}
+.tag-muted{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:650;padding:1px 6px;border-radius:5px;letter-spacing:.02em;color:var(--code-foreground);background:var(--secondary);border:1px solid var(--border-strong);white-space:nowrap}
+.tag-meta{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;padding:1px 6px;border-radius:5px;color:var(--muted-foreground);background:var(--code-background);border:1px solid var(--border);white-space:nowrap}
+.tag-estorno{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:650;padding:1px 6px;border-radius:5px;color:var(--foreground);background:color-mix(in srgb,var(--warning) 10%,transparent);border:1px solid color-mix(in srgb,var(--warning) 45%,transparent);white-space:nowrap}
+.tag-rel{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;padding:1px 6px;border-radius:5px;color:var(--muted-foreground);background:transparent;border:1px solid var(--border);white-space:nowrap}
+.tag-rel-btn{font:inherit;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 38%,transparent);cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s}
+.tag-rel-btn:hover{background:color-mix(in srgb,var(--accent) 20%,transparent);border-color:var(--accent)}
+.link-btn{font:inherit;font-family:var(--font-mono);font-size:12px;color:var(--accent);background:transparent;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);text-underline-offset:2px}
+.link-btn:hover{color:var(--foreground);text-decoration-color:var(--foreground)}
+.legenda-probs{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-radius:7px;background:var(--code-background);border:1px solid var(--border);margin-bottom:12px;font-size:11.5px;color:var(--muted-foreground)}
+.legenda-probs span{display:inline-flex;align-items:center;gap:5px}
+.dossie{border:1px solid var(--border);border-radius:8px;background:color-mix(in srgb,var(--card) 70%,var(--background));margin-top:10px;overflow:hidden}
+.dossie:first-child{margin-top:0}
+.dossie>summary{list-style:none;padding:12px 14px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;transition:background .12s}
+.dossie>summary:hover{background:var(--secondary)}
+.dossie>summary::-webkit-details-marker{display:none}
+.dossie-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dossie-cnj{font-family:var(--font-mono);font-size:13.5px;font-weight:700;color:var(--foreground)}
+.dossie-ente{font-weight:600;color:var(--foreground)}
+.dossie-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted-foreground)}
+.dossie-meta b{color:var(--foreground);font-weight:600}
+.dossie-right{display:flex;align-items:center;gap:8px}
+.chev{font-size:16px;transition:transform .15s;color:var(--muted-foreground);line-height:1}
+details[open]>summary .chev{transform:rotate(90deg)}
+.dossie-body{padding:14px;border-top:1px solid var(--border);background:var(--code-background);display:grid;gap:14px}
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.kv{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.kv .k{font-size:11px;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.03em}
+.kv .v{font-size:12.5px;margin-top:3px;font-weight:600;word-break:break-word;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sub-list{display:grid;gap:8px}
+.sub-sec+.sub-sec{margin-top:14px}
+.oc-item,.pag-item{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px 12px;display:grid;gap:6px;transition:border-color .2s,box-shadow .2s}
+.pag-item.flash{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.oc-head,.pag-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.oc-field{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--foreground)}
+.oc-orig{font-size:11.5px;color:var(--muted-foreground);margin-left:auto}
+.diff{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:12px;background:var(--code-background);border:1px solid var(--border);border-radius:6px;padding:6px 10px}
+.diff-old{color:var(--diff-old);word-break:break-word}
+.diff-arrow{color:var(--muted-foreground);font-weight:700}
+.diff-new{color:var(--diff-new);word-break:break-word}
+.diff-keep{color:var(--diff-keep);word-break:break-word}
+.diff-note{font-family:var(--font-sans);font-size:11.5px;color:var(--muted-foreground)}
+.oc-motivo{font-size:12.5px;color:var(--foreground)}
+.pag-idx{font-family:var(--font-mono);font-size:11.5px;color:var(--muted-foreground)}
+.pag-id{font-family:var(--font-mono);font-size:13px;font-weight:700}
+.pag-val{margin-left:auto;font-family:var(--font-mono);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.pag-val-raw{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--muted-foreground);background:var(--code-background);border:1px dashed var(--border-strong);border-radius:5px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.pag-val-raw small{font-family:var(--font-sans);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;margin-right:4px}
+.pag-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted-foreground)}
+.alerta{border:1px solid color-mix(in srgb,var(--warning) 45%,transparent);background:color-mix(in srgb,var(--warning) 10%,transparent);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:12px}
+.alerta b{color:var(--warning-text)}
+.matriz-wrap{overflow-x:auto}
+.matriz{width:100%;border-collapse:separate;border-spacing:4px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.matriz th,.matriz td{padding:7px 10px;border-radius:6px;text-align:right}
+.matriz th:first-child,.matriz td:first-child{text-align:left}
+.matriz th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground);font-weight:600}
+.matriz .m-btn{cursor:pointer;border:1px solid var(--border);background:var(--heat,var(--code-background));color:var(--foreground);transition:background .12s,border-color .12s}
+.matriz .m-btn:hover{border-color:var(--ring);filter:brightness(1.12)}
+.matriz .m-btn.sel{background:color-mix(in srgb,var(--foreground) 16%,var(--secondary));border-color:var(--foreground);font-weight:700}
+.matriz .m-zero{color:var(--muted-foreground);opacity:.55}
+.matriz .m-total{background:var(--secondary);font-weight:700;border:1px solid var(--border)}
+.matriz .m-head-btn{cursor:pointer;background:transparent;border:1px solid transparent}
+.matriz .m-head-btn:hover{background:var(--secondary);color:var(--foreground)}
+.matriz .m-head-btn.sel{border-color:var(--foreground);color:var(--foreground);background:color-mix(in srgb,var(--foreground) 12%,var(--secondary))}
+.premissa-card{border:1px solid color-mix(in srgb,var(--premissa) 38%,transparent);background:color-mix(in srgb,var(--premissa) 6%,var(--card));border-radius:8px;padding:12px 14px;display:grid;gap:8px}
+.premissa-card+.premissa-card{margin-top:10px}
+.premissa-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.premissa-titulo{font-weight:700;font-size:13.5px}
+.afetados{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.afetado-btn{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--foreground);border-radius:6px;padding:5px 9px;display:inline-flex;gap:6px;align-items:center}
+.afetado-btn:hover{background:var(--secondary);border-color:var(--accent)}
+.val-row{display:grid;grid-template-columns:68px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--border)}
+.val-row:first-child{border-top:0}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-foreground);font-weight:600}
+.tbl td.num,.tbl th.num{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:760px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:6px}
+  .dossie>summary{grid-template-columns:1fr}
+  .dossie-right{justify-content:flex-start}
+  .oc-orig,.pag-val,.pag-val-raw{margin-left:0}
+  .val-row{grid-template-columns:62px 1fr}
+}
+@media (max-width:340px){
+  .kpis{grid-template-columns:1fr}
+}
+</style></head><body>
+
+<nav class="topbar" aria-label="Alternar entre painéis">
+  <div class="nav-switch">
+    <a class="nav-link" href="auditoria.html"><span class="nav-step">1</span>Auditoria (Antes)</a>
+    <a class="nav-link" href="limpeza.html" aria-current="page"><span class="nav-step">2</span>Limpeza (Depois)</a>
+  </div>
+  <span class="topbar-hint"><span class="kbd">/</span> buscar · <span class="kbd">Esc</span> limpar</span>
+</nav>
+
+<div class="intro">
+  <div>
+    <h1>Limpeza e conciliação — Painel interativo</h1>
+    <p class="muted">Rastreabilidade 1-para-1 dos precatórios, eventos de pagamento, ocorrências (P1–P4), premissas adotadas e validação da base limpa.</p>
+  </div>
+  <div id="statusGeral"></div>
+</div>
+
+<div class="card filtro">
+  <div class="filtro-grupo filtro-grid" id="grupoFiltrosOc">
+    <div class="filtro-col">
+      <div class="filtro-label">Problema</div>
+      <div class="chips" id="chipsProblema" role="group" aria-label="Filtrar por problema"></div>
+    </div>
+    <div class="filtro-col">
+      <div class="filtro-label">Destino da ocorrência</div>
+      <div class="chips" id="chipsCategoria" role="group" aria-label="Filtrar por destino"></div>
+    </div>
+    <div class="filtro-col">
+      <div class="filtro-label">Premissa</div>
+      <div class="chips" id="chipsPremissa" role="group" aria-label="Filtrar por premissa"></div>
+    </div>
+  </div>
+  <div class="filtro-grupo">
+    <div class="busca-linha">
+      <div class="busca-col">
+        <div class="filtro-label">Busca</div>
+        <div class="busca-wrap">
+          <input type="search" id="busca" placeholder="Buscar CNJ, chave 20 dígitos, evento, ente ou motivo (ex.: ev-001, 0023456, Santos)" aria-label="Buscar registro ou texto">
+          <button type="button" class="busca-limpar" id="btnLimparBusca" title="Limpar busca" aria-label="Limpar busca" hidden>✕</button>
+        </div>
+      </div>
+      <div class="filtro-col" id="grupoEntidade">
+        <div class="filtro-label">Entidade</div>
+        <div class="chips" id="chipsEntidade" role="group" aria-label="Filtrar por entidade"></div>
+      </div>
+    </div>
+  </div>
+  <div class="filtro-nota" id="notaFiltroPremissas" hidden>Na aba <b>Premissas &amp; Validação</b>, o campo de busca filtra premissas e efeito líquido; os filtros de problema, destino e entidade aplicam-se às demais abas.</div>
+  <div class="ativos" id="filtrosAtivos" hidden></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="tabs" id="tabs" role="tablist" aria-label="Visões do relatório"></div>
+
+<main id="conteudo" role="tabpanel"></main>
+
+<div id="anuncio" class="sr-only" aria-live="polite"></div>
+
+<script>
+const D = __DATA__;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+const fmtBRL = v => {
+  const num = Number(v);
+  if (v === null || v === undefined || v === '' || Number.isNaN(num)) return esc(v ?? '—');
+  return num.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+};
+
+const OC_POR_ID = new Map(D.ocorrencias.map(o => [o.id, o]));
+
+const PROB_INFO = {
+  P1: {nome: 'P1', desc: 'Duplicidade / retificação'},
+  P2: {nome: 'P2', desc: 'Prazo / estorno'},
+  P3: {nome: 'P3', desc: 'Formato / tipo / encoding'},
+  P4: {nome: 'P4', desc: 'Conciliação entre bases'}
+};
+
+const CAT_INFO = {
+  corrigido: {nome: 'Corrigido', cor: 'var(--info)'},
+  descartado: {nome: 'Descartado', cor: 'var(--destructive)'},
+  em_duvida: {nome: 'Em dúvida', cor: 'var(--warning)'}
+};
+
+const ENT_INFO = {
+  precatorio: {nome: 'Precatório'},
+  pagamento: {nome: 'Pagamento'},
+  arquivo: {nome: 'Arquivo'}
+};
+
+const DEST_PAG_INFO = {
+  mantido: {nome: 'Mantido', cor: 'var(--success)', neutro: false},
+  substituido: {nome: 'Substituído', cor: 'var(--neutral)', neutro: true},
+  deduplicado: {nome: 'Deduplicado', cor: 'var(--neutral)', neutro: true},
+  descartado: {nome: 'Descartado', cor: 'var(--destructive)', neutro: false}
+};
+
+const COBERTURA_ROTULO = {
+  ambas: 'hub.csv + tribunal.csv',
+  somente_hub: 'Somente hub.csv',
+  somente_tribunal: 'Somente tribunal.csv',
+  desconhecida: 'Não identificada'
+};
+
+const st = {
+  aba: 'processos',
+  problema: 'TODOS',
+  categoria: 'TODAS',
+  entidade: 'TODAS',
+  soPremissa: false,
+  statusProcesso: 'TODOS',
+  destinoPagamento: 'TODOS',
+  busca: '',
+  abertosUsuario: new Set(),
+  fechadosNaBusca: new Set(),
+  filtrosAnteriores: null
+};
+
+function norm(s) {
+  return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function destacarHtml(texto, qNorm) {
+  const s = String(texto ?? '');
+  if (!qNorm) return esc(s);
+  const chars = [...s];
+  let normStr = '';
+  const map = [];
+  for (let i = 0; i < chars.length; i++) {
+    const n = norm(chars[i]);
+    for (let j = 0; j < n.length; j++) {
+      normStr += n[j];
+      map.push(i);
+    }
+  }
+  const ranges = [];
+  let from = 0;
+  while (from <= normStr.length - qNorm.length) {
+    const idx = normStr.indexOf(qNorm, from);
+    if (idx === -1) break;
+    const origStart = map[idx];
+    const origEnd = map[idx + qNorm.length - 1] + 1;
+    if (ranges.length && origStart <= ranges[ranges.length - 1][1]) {
+      ranges[ranges.length - 1][1] = Math.max(ranges[ranges.length - 1][1], origEnd);
+    } else {
+      ranges.push([origStart, origEnd]);
+    }
+    from = idx + qNorm.length;
+  }
+  if (!ranges.length) return esc(s);
+  let out = '';
+  let cur = 0;
+  for (const [a, b] of ranges) {
+    if (a > cur) out += esc(chars.slice(cur, a).join(''));
+    out += `<mark>${esc(chars.slice(a, b).join(''))}</mark>`;
+    cur = b;
+  }
+  if (cur < chars.length) out += esc(chars.slice(cur).join(''));
+  return out;
+}
+
+function temAlgumFiltro() {
+  return st.problema !== 'TODOS' || st.categoria !== 'TODAS' || st.entidade !== 'TODAS' ||
+    st.soPremissa || st.statusProcesso !== 'TODOS' || st.destinoPagamento !== 'TODOS' ||
+    st.busca.trim().length > 0;
+}
+
+function snapshotFiltros() {
+  return {
+    aba: st.aba,
+    problema: st.problema,
+    categoria: st.categoria,
+    entidade: st.entidade,
+    soPremissa: st.soPremissa,
+    statusProcesso: st.statusProcesso,
+    destinoPagamento: st.destinoPagamento,
+    busca: st.busca
+  };
+}
+
+function lerHash() {
+  const h = location.hash.replace(/^#/, '');
+  if (!h) return;
+  const p = new URLSearchParams(h);
+  if (p.has('aba') && ['processos','ocorrencias','pagamentos','premissas'].includes(p.get('aba'))) st.aba = p.get('aba');
+  if (p.has('problema')) st.problema = p.get('problema') || 'TODOS';
+  if (p.has('categoria')) st.categoria = p.get('categoria') || 'TODAS';
+  if (p.has('entidade')) st.entidade = p.get('entidade') || 'TODAS';
+  st.soPremissa = p.get('premissa') === '1';
+  if (p.has('status')) st.statusProcesso = p.get('status') || 'TODOS';
+  if (p.has('destino')) st.destinoPagamento = p.get('destino') || 'TODOS';
+  if (p.has('q')) {
+    st.busca = p.get('q') || '';
+    document.getElementById('busca').value = st.busca;
+  }
+  if (p.has('proc')) st.abertosUsuario.add(p.get('proc'));
+}
+
+function gravarHash() {
+  const p = new URLSearchParams();
+  if (st.aba !== 'processos') p.set('aba', st.aba);
+  if (st.problema !== 'TODOS') p.set('problema', st.problema);
+  if (st.categoria !== 'TODAS') p.set('categoria', st.categoria);
+  if (st.entidade !== 'TODAS') p.set('entidade', st.entidade);
+  if (st.soPremissa) p.set('premissa', '1');
+  if (st.statusProcesso !== 'TODOS') p.set('status', st.statusProcesso);
+  if (st.destinoPagamento !== 'TODOS') p.set('destino', st.destinoPagamento);
+  if (st.busca.trim()) p.set('q', st.busca.trim());
+  const novo = p.toString() ? `#${p.toString()}` : '';
+  if (location.hash !== novo) {
+    try { history.replaceState(null, '', novo || location.pathname + location.search); } catch {}
+  }
+}
+
+function preservarFoco(fn) {
+  const active = document.activeElement;
+  let selector = null;
+  if (active && active !== document.body && active.id !== 'busca') {
+    for (const attr of ['data-aba','data-prob','data-cat','data-premissa','data-ent','data-status-proc','data-dest-pag','data-limpa','data-kpi-aba']) {
+      if (active.hasAttribute(attr)) {
+        selector = `[${attr}="${CSS.escape(active.getAttribute(attr))}"]`;
+        break;
+      }
+    }
+    if (!selector && active.hasAttribute('data-matriz-p')) {
+      selector = `[data-matriz-p="${CSS.escape(active.getAttribute('data-matriz-p'))}"][data-matriz-c="${CSS.escape(active.getAttribute('data-matriz-c'))}"]`;
+    }
+    if (!selector && active.id) selector = `#${CSS.escape(active.id)}`;
+  }
+  fn();
+  if (selector) {
+    const next = document.querySelector(selector);
+    if (next) next.focus({preventScroll: true});
+  }
+}
+
+function ocCombinaBusca(oc, q) {
+  if (!q) return true;
+  return [oc.problema, oc.categoria, oc.entidade, oc.identificador, oc.chave_cnj, oc.origem, oc.campo, oc.antes, oc.depois, oc.motivo]
+    .some(v => norm(v).includes(q));
+}
+
+function ocPassaFiltros(oc, {ignorarProblema = false, ignorarCategoria = false, ignorarEntidade = false, ignorarPremissa = false, ignorarBusca = false} = {}) {
+  const q = ignorarBusca ? '' : norm(st.busca.trim());
+  if (!ignorarProblema && st.problema !== 'TODOS' && oc.problema !== st.problema) return false;
+  if (!ignorarCategoria && st.categoria !== 'TODAS' && oc.categoria !== st.categoria) return false;
+  if (!ignorarEntidade && st.entidade !== 'TODAS' && oc.entidade !== st.entidade) return false;
+  if (!ignorarPremissa && st.soPremissa && !oc.usa_premissa) return false;
+  return ocCombinaBusca(oc, q);
+}
+
+function pagCombinaBusca(p, q) {
+  if (!q) return true;
+  return [p.indice, p.evento_id, p.processo, p.chave_cnj, p.tipo, p.valor_original, p.valor_limpo, p.data_pagamento, p.atualizado_em, p.destino, p.motivo, p.relacao, ...(p.problemas || [])]
+    .some(v => norm(v).includes(q));
+}
+
+function pagPassaFiltros(p, {ignorarDestinoPag = false, ignorarBusca = false} = {}) {
+  if (st.entidade !== 'TODAS' && st.entidade !== 'pagamento') return false;
+  if (!ignorarDestinoPag && st.destinoPagamento !== 'TODOS' && p.destino !== st.destinoPagamento) return false;
+
+  const precisaOcEspecifica = st.categoria !== 'TODAS' || st.soPremissa;
+  if (precisaOcEspecifica) {
+    const ocsItem = (p.ocorrencia_ids || []).map(id => OC_POR_ID.get(id)).filter(Boolean);
+    const casaOc = ocsItem.some(o =>
+      (st.problema === 'TODOS' || o.problema === st.problema) &&
+      (st.categoria === 'TODAS' || o.categoria === st.categoria) &&
+      (!st.soPremissa || o.usa_premissa)
+    );
+    if (!casaOc) return false;
+  } else if (st.problema !== 'TODOS' && !(p.problemas || []).includes(st.problema)) {
+    return false;
+  }
+
+  const q = ignorarBusca ? '' : norm(st.busca.trim());
+  return pagCombinaBusca(p, q);
+}
+
+function processoEstaAberto(chave) {
+  return st.busca.trim().length > 0
+    ? !st.fechadosNaBusca.has(chave)
+    : st.abertosUsuario.has(chave);
+}
+
+function avaliarProcesso(proc, {ignorarStatus = false} = {}) {
+  if (!ignorarStatus && st.statusProcesso !== 'TODOS' && proc.status !== st.statusProcesso) return null;
+  if (st.entidade === 'arquivo') return null;
+
+  const q = norm(st.busca.trim());
+  const ocsTodas = D.ocorrencias.filter(o => o.chave_cnj === proc.chave);
+  const pagsTodos = D.pagamentos.filter(p => p.chave_cnj === proc.chave);
+  const ocsEstruturais = ocsTodas.filter(o => ocPassaFiltros(o, {ignorarBusca: true}));
+  const pagsEstruturais = pagsTodos.filter(p => pagPassaFiltros(p, {ignorarDestinoPag: true, ignorarBusca: true}));
+
+  const temFiltroEstrutural = st.problema !== 'TODOS' || st.categoria !== 'TODAS' || st.entidade !== 'TODAS' || st.soPremissa;
+  if (temFiltroEstrutural) {
+    const matchStatusDuvida = st.categoria === 'em_duvida' && st.problema === 'TODOS' && !st.soPremissa && st.entidade !== 'pagamento' && proc.status === 'em_duvida';
+    if (ocsEstruturais.length === 0 && pagsEstruturais.length === 0 && !matchStatusDuvida) return null;
+  }
+
+  const ocsBusca = q ? ocsEstruturais.filter(o => ocCombinaBusca(o, q)) : ocsEstruturais;
+  const pagsBusca = q ? pagsEstruturais.filter(p => pagCombinaBusca(p, q)) : pagsEstruturais;
+  const camposProc = [proc.cnj, proc.chave, proc.ente_devedor, proc.valor_face, proc.apresentado_em, proc.prazo_antes, proc.prazo_depois, proc.status, COBERTURA_ROTULO[proc.cobertura], ...(proc.problemas || [])];
+  const metaCasa = !q || camposProc.some(v => norm(v).includes(q));
+
+  if (q && !metaCasa && ocsBusca.length === 0 && pagsBusca.length === 0) return null;
+
+  const ocsBase = temFiltroEstrutural ? ocsEstruturais : ocsTodas;
+  const pagsBase = temFiltroEstrutural ? pagsEstruturais : pagsTodos;
+  const ocsExibir = q
+    ? (ocsBusca.length > 0 ? ocsBusca : (metaCasa ? ocsBase : []))
+    : ocsBase;
+  const pagsExibir = q
+    ? (pagsBusca.length > 0 ? pagsBusca : (metaCasa ? pagsBase : []))
+    : pagsBase;
+
+  return {proc, ocsTodas, ocsExibir, pagsTodos, pagsExibir};
+}
+
+function renderBadgeProb(p, {destacarFiltro = false} = {}) {
+  const info = PROB_INFO[p] || {nome: p, desc: p};
+  const clsFiltro = destacarFiltro && st.problema !== 'TODOS'
+    ? (st.problema === p ? ' tag-code-active' : ' tag-code-dim')
+    : '';
+  return `<span class="tag-code${clsFiltro}" title="${esc(info.desc || p)}">${esc(info.nome)}</span>`;
+}
+
+function renderBadgeCat(cat) {
+  const info = CAT_INFO[cat] || {nome: cat, cor: 'var(--neutral)'};
+  return `<span class="tag tag-sm" style="--c:${info.cor}">${esc(info.nome)}</span>`;
+}
+
+function renderBadgeDestPag(dest) {
+  const info = DEST_PAG_INFO[dest] || {nome: dest, cor: 'var(--neutral)', neutro: true};
+  if (info.neutro) return `<span class="tag-muted">${esc(info.nome)}</span>`;
+  return `<span class="tag tag-sm" style="--c:${info.cor}">${esc(info.nome)}</span>`;
+}
+
+function renderBadgeTipoPag(tipo) {
+  if (tipo === 'estorno') return '<span class="tag-estorno">Estorno</span>';
+  if (tipo === 'pagamento') return '';
+  return `<span class="tag tag-sm" style="--c:var(--destructive)">${esc(tipo || 'Tipo inválido')}</span>`;
+}
+
+function renderRelacaoPagHtml(relacao) {
+  if (!relacao) return '';
+  const m = String(relacao).match(/#(\d+)/);
+  if (!m) return `<span class="tag-rel">${esc(relacao)}</span>`;
+  return `<button type="button" class="tag-rel-btn" data-ir-pagamento="${m[1]}" title="Ir para o item #${m[1]}">${esc(relacao)} ↗</button>`;
+}
+
+function renderDiffOcorrencia(oc, q) {
+  const temAntes = oc.antes !== null && oc.antes !== undefined && oc.antes !== '';
+  const temDepois = oc.depois !== null && oc.depois !== undefined && oc.depois !== '';
+  if (temAntes && temDepois && oc.antes === oc.depois) {
+    return `<div class="diff"><span class="diff-keep">${destacarHtml(oc.antes, q)}</span><span class="diff-note">vinculado pela chave canônica (sem alteração do valor)</span></div>`;
+  }
+  if (oc.categoria === 'em_duvida' && !temDepois) {
+    return `<div class="diff"><span class="diff-old">${destacarHtml(oc.antes || '—', q)}</span><span class="diff-arrow">→</span><span class="diff-keep">Preservado em dúvida</span></div>`;
+  }
+  const depoisTxt = temDepois ? oc.depois : '—';
+  const clsNovo = oc.categoria === 'em_duvida' ? 'diff-keep' : 'diff-new';
+  return `<div class="diff"><span class="diff-old">${destacarHtml(oc.antes || '—', q)}</span><span class="diff-arrow">→</span><span class="${clsNovo}">${destacarHtml(depoisTxt, q)}</span></div>`;
+}
+
+function renderOcorrenciaCard(oc, {mostrarIdentificador = true} = {}) {
+  const q = norm(st.busca.trim());
+  const identHtml = mostrarIdentificador
+    ? (oc.chave_cnj
+        ? `<button type="button" class="link-btn" data-ir-processo="${esc(oc.chave_cnj)}" title="Abrir dossiê deste processo">${destacarHtml(oc.identificador, q)}</button>`
+        : `<span class="mono">${destacarHtml(oc.identificador, q)}</span>`)
+    : '';
+  return `<div class="oc-item">
+    <div class="oc-head">
+      ${renderBadgeProb(oc.problema)}
+      ${renderBadgeCat(oc.categoria)}
+      <span class="tag-meta">${esc(ENT_INFO[oc.entidade]?.nome || oc.entidade)}</span>
+      ${oc.usa_premissa ? '<span class="tag-premissa">Premissa</span>' : ''}
+      ${identHtml}
+      <span class="oc-field">${destacarHtml(oc.campo, q)}</span>
+      <span class="oc-orig">${destacarHtml(oc.origem, q)}</span>
+    </div>
+    ${renderDiffOcorrencia(oc, q)}
+    <div class="oc-motivo">${destacarHtml(oc.motivo, q)}</div>
+  </div>`;
+}
+
+function renderPagamentoCard(p, {mostrarLinkProcesso = true} = {}) {
+  const q = norm(st.busca.trim());
+  const procHtml = p.chave_cnj && mostrarLinkProcesso
+    ? `<button type="button" class="link-btn" data-ir-processo="${esc(p.chave_cnj)}" title="Abrir dossiê deste processo">${destacarHtml(p.processo, q)}</button>`
+    : `<span class="mono">${destacarHtml(p.processo || '—', q)}</span>`;
+  let valorHtml;
+  if (p.valor_limpo) {
+    const valTxt = p.valor_normalizado
+      ? `${destacarHtml(p.valor_original, q)} → ${fmtBRL(p.valor_limpo)}`
+      : fmtBRL(p.valor_limpo);
+    const corVal = p.destino === 'mantido' ? 'var(--foreground)' : 'var(--muted-foreground)';
+    valorHtml = `<span class="pag-val" style="color:${corVal}">${valTxt}</span>`;
+  } else {
+    valorHtml = `<span class="pag-val-raw" title="Valor bruto da entrada (não aproveitado na base limpa)"><small>Bruto</small>${destacarHtml(p.valor_original || '—', q)}</span>`;
+  }
+  return `<div class="pag-item" data-pag-idx="${p.indice}">
+    <div class="pag-head">
+      <span class="pag-idx">#${p.indice}</span>
+      <span class="pag-id">${destacarHtml(p.evento_id || `item-${p.indice}`, q)}</span>
+      ${renderBadgeDestPag(p.destino)}
+      ${renderBadgeTipoPag(p.tipo)}
+      ${(p.problemas || []).map(pr => renderBadgeProb(pr)).join('')}
+      ${renderRelacaoPagHtml(p.relacao)}
+      ${valorHtml}
+    </div>
+    <div class="pag-meta">
+      <span>Processo: ${procHtml}</span>
+      <span>Data: <b class="mono">${destacarHtml(p.data_pagamento || '—', q)}</b></span>
+      <span>Atualizado em: <b class="mono">${destacarHtml(p.atualizado_em || '—', q)}</b></span>
+    </div>
+    <div class="oc-motivo">${destacarHtml(p.motivo, q)}</div>
+  </div>`;
+}
+
+function formatarPrazoHtml(p) {
+  const antes = esc(p.prazo_antes || '—');
+  const depois = esc(p.prazo_depois || '—');
+  if (p.prazo_alterado) return `<span class="diff-old">${antes}</span> → <span class="diff-new">${depois}</span>`;
+  if (!p.prazo_antes && p.prazo_depois) return `— → <span class="diff-new">${depois}</span>`;
+  return depois;
+}
+
+function renderLegendaProbs() {
+  return `<div class="legenda-probs">${['P1','P2','P3','P4'].map(p =>
+    `<span>${renderBadgeProb(p)} ${esc(PROB_INFO[p].desc)}</span>`
+  ).join('')}</div>`;
+}
+
+function renderAbaProcessos(processosVisiveis, ocsSemProcesso, pagsSemProcesso) {
+  const q = norm(st.busca.trim());
+  const todosAval = D.precatorios.map(p => avaliarProcesso(p, {ignorarStatus: true})).filter(Boolean);
+  const nTodos = todosAval.length;
+  const nDuvida = todosAval.filter(x => x.proc.status === 'em_duvida').length;
+  const nConc = todosAval.filter(x => x.proc.status === 'conciliado').length;
+
+  const todosAbertos = processosVisiveis.length > 0 && processosVisiveis.every(x => processoEstaAberto(x.proc.chave));
+
+  const cardsHtml = processosVisiveis.length
+    ? processosVisiveis.map(x => {
+        const p = x.proc;
+        const aberto = processoEstaAberto(p.chave);
+        const corStatus = p.status === 'conciliado' ? 'var(--success)' : 'var(--warning)';
+        const rotStatus = p.status === 'conciliado' ? 'CONCILIADO' : 'EM DÚVIDA';
+        const prazoHtml = formatarPrazoHtml(p);
+
+        const notaOcs = x.ocsExibir.length < x.ocsTodas.length
+          ? ` (exibindo ${x.ocsExibir.length} de ${x.ocsTodas.length})`
+          : '';
+        const notaPags = x.pagsExibir.length < x.pagsTodos.length
+          ? ` (exibindo ${x.pagsExibir.length} de ${x.pagsTodos.length})`
+          : '';
+
+        const msgSemOcs = x.ocsTodas.length
+          ? 'Nenhuma ocorrência deste processo corresponde aos filtros atuais.'
+          : 'Nenhuma ocorrência registrada para este processo.';
+        const msgSemPags = x.pagsTodos.length
+          ? 'Nenhum evento de pagamento deste processo corresponde aos filtros atuais.'
+          : 'Nenhum evento em pagamentos.json vinculado a este processo.';
+
+        return `<details class="dossie" data-chave="${esc(p.chave)}"${aberto ? ' open' : ''}>
+          <summary>
+            <div>
+              <div class="dossie-top">
+                <span class="tag" style="--c:${corStatus}">${rotStatus}</span>
+                <span class="dossie-cnj">${destacarHtml(p.cnj, q)}</span>
+                <button type="button" class="copy-btn" data-copiar="${esc(p.cnj)}" title="Copiar número CNJ" aria-label="Copiar CNJ ${esc(p.cnj)}">Copiar</button>
+                <span class="dossie-ente">${destacarHtml(p.ente_devedor, q)}</span>
+                ${p.usa_premissa ? '<span class="tag-premissa">Premissa</span>' : ''}
+              </div>
+              <div class="dossie-meta">
+                <span>Valor de face: <b>${fmtBRL(p.valor_face)}</b></span>
+                <span>Prazo: <b class="mono">${prazoHtml}</b></span>
+                <span>Efeito líquido (lote): <b>${fmtBRL(p.efeito_liquido)}</b></span>
+                <span>Pagamentos: <b>${p.total_eventos_mantidos}/${p.total_eventos}</b> mantidos</span>
+              </div>
+            </div>
+            <div class="dossie-right">
+              <div class="chips">${p.problemas.length ? p.problemas.map(pr => renderBadgeProb(pr, {destacarFiltro: true})).join('') : '<span class="muted">Sem alertas</span>'}</div>
+              <span class="chev" aria-hidden="true">›</span>
+            </div>
+          </summary>
+          <div class="dossie-body">
+            <div>
+              <h3>Cadastro consolidado</h3>
+              <div class="kv-grid">
+                <div class="kv"><div class="k">Chave canônica (20 dígitos)</div><div class="v mono">${destacarHtml(p.chave, q)}<button type="button" class="copy-btn" data-copiar="${esc(p.chave)}" title="Copiar chave de 20 dígitos">Copiar</button></div></div>
+                <div class="kv"><div class="k">Cobertura</div><div class="v">${destacarHtml(COBERTURA_ROTULO[p.cobertura] || p.cobertura, q)}</div></div>
+                <div class="kv"><div class="k">Apresentado em</div><div class="v mono">${destacarHtml(p.apresentado_em || '—', q)}</div></div>
+                <div class="kv"><div class="k">Prazo (antes → depois)</div><div class="v mono">${prazoHtml}</div></div>
+                <div class="kv"><div class="k">Valor de face</div><div class="v">${fmtBRL(p.valor_face)}</div></div>
+                <div class="kv"><div class="k">Efeito líquido no arquivo</div><div class="v">${fmtBRL(p.efeito_liquido)}</div></div>
+              </div>
+            </div>
+            <div>
+              <h3>Ocorrências deste processo (${x.ocsTodas.length})${esc(notaOcs)}</h3>
+              <div class="sub-list">
+                ${x.ocsExibir.length ? x.ocsExibir.map(o => renderOcorrenciaCard(o, {mostrarIdentificador: false})).join('') : `<div class="muted">${msgSemOcs}</div>`}
+              </div>
+            </div>
+            <div>
+              <h3>Eventos de pagamento vinculados (${x.pagsTodos.length})${esc(notaPags)}</h3>
+              <div class="sub-list">
+                ${x.pagsExibir.length ? x.pagsExibir.map(pg => renderPagamentoCard(pg, {mostrarLinkProcesso: false})).join('') : `<div class="muted">${msgSemPags}</div>`}
+              </div>
+            </div>
+          </div>
+        </details>`;
+      }).join('')
+    : `<div class="vazio">Nenhum precatório corresponde aos filtros atuais.<div class="vazio-actions"><button type="button" class="btn-sec" id="limparFiltros">Limpar filtros</button></div></div>`;
+
+  const pagsSemProcIds = new Set(pagsSemProcesso.map(p => p.indice));
+  const ocsSemProcDedup = ocsSemProcesso.filter(o =>
+    !(o.entidade === 'pagamento' && (o.pagamento_indices || []).some(idx => pagsSemProcIds.has(idx)))
+  );
+  const totalSemVinculo = ocsSemProcDedup.length + pagsSemProcesso.length;
+
+  const semVinculoHtml = totalSemVinculo
+    ? `<div class="card">
+        <h2>Registros sem vínculo a um processo específico (${totalSemVinculo})</h2>
+        <p class="sub muted">Ajustes em nível de arquivo (encoding/delimitador) e eventos órfãos sem CNJ válido.</p>
+        ${ocsSemProcDedup.length ? `<div class="sub-sec"><h3>Ocorrências sem processo (${ocsSemProcDedup.length})</h3><div class="sub-list">${ocsSemProcDedup.map(o => renderOcorrenciaCard(o)).join('')}</div></div>` : ''}
+        ${pagsSemProcesso.length ? `<div class="sub-sec"><h3>Eventos de pagamento órfãos (${pagsSemProcesso.length})</h3><div class="sub-list">${pagsSemProcesso.map(pg => renderPagamentoCard(pg)).join('')}</div></div>` : ''}
+      </div>`
+    : '';
+
+  if (st.entidade === 'arquivo' && totalSemVinculo > 0) {
+    return `${semVinculoHtml}<div class="card"><div class="vazio">O filtro <b>Entidade: Arquivo</b> exibe apenas registros em nível de arquivo acima.<div class="vazio-actions"><button type="button" class="btn-sec" data-limpa="entidade">Mostrar todos os precatórios</button></div></div></div>`;
+  }
+
+  return `<div class="card">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <h2>Dossiê 1-para-1 por processo (${processosVisiveis.length} de ${D.precatorios.length})</h2>
+        <p class="sub muted">Clique em um precatório para ver cadastro, ocorrências e pagamentos consolidados no mesmo lugar.</p>
+      </div>
+      <div class="sec-actions">
+        <div class="chips" role="group" aria-label="Status do precatório">
+          <button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.statusProcesso === 'TODOS'}" data-status-proc="TODOS">Todos<span class="n">${nTodos}</span></button>
+          <button type="button" class="chip" style="--c:var(--warning)" aria-pressed="${st.statusProcesso === 'em_duvida'}" data-status-proc="em_duvida"><span class="dot" style="background:var(--warning)"></span>Em dúvida<span class="n">${nDuvida}</span></button>
+          <button type="button" class="chip" style="--c:var(--success)" aria-pressed="${st.statusProcesso === 'conciliado'}" data-status-proc="conciliado"><span class="dot" style="background:var(--success)"></span>Conciliado<span class="n">${nConc}</span></button>
+        </div>
+        ${processosVisiveis.length ? `<button type="button" class="btn-sec" id="btnToggleTodos">${todosAbertos ? 'Recolher todos' : 'Expandir todos'}</button>` : ''}
+      </div>
+    </div>
+    ${renderLegendaProbs()}
+    ${cardsHtml}
+  </div>${semVinculoHtml}`;
+}
+
+function renderAbaOcorrencias(ocsVisiveis) {
+  const baseMatriz = D.ocorrencias.filter(o => ocPassaFiltros(o, {ignorarProblema: true, ignorarCategoria: true}));
+  const probs = ['P1', 'P2', 'P3', 'P4'];
+  const cats = ['corrigido', 'descartado', 'em_duvida'];
+
+  const contar = (p, c) => baseMatriz.filter(o => (p === 'TODOS' || o.problema === p) && (c === 'TODAS' || o.categoria === c)).length;
+  let maxCelula = 1;
+  for (const p of probs) {
+    for (const c of cats) {
+      maxCelula = Math.max(maxCelula, contar(p, c));
+    }
+  }
+
+  const linhasMatriz = probs.map(p => {
+    const tot = contar(p, 'TODAS');
+    const selRow = st.problema === p && st.categoria === 'TODAS';
+    const celulas = cats.map(c => {
+      const n = contar(p, c);
+      const selCell = st.problema === p && st.categoria === c;
+      const pct = n > 0 ? Math.round(10 + (n / maxCelula) * 26) : 0;
+      const heatStyle = n > 0 && !selCell ? ` style="--heat:color-mix(in srgb,${CAT_INFO[c].cor} ${pct}%,var(--code-background))"` : '';
+      return `<td class="m-btn ${selCell ? 'sel' : ''} ${n === 0 ? 'm-zero' : ''}"${heatStyle} role="button" tabindex="0" aria-pressed="${selCell}" data-matriz-p="${p}" data-matriz-c="${c}" title="Filtrar ${p} × ${CAT_INFO[c].nome}">${n}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="m-btn ${selRow ? 'sel' : ''}" role="button" tabindex="0" aria-pressed="${selRow}" data-matriz-p="${p}" data-matriz-c="TODAS" title="Filtrar ${p}">${renderBadgeProb(p)} <span class="muted">${esc(PROB_INFO[p].desc)}</span></td>
+      ${celulas}
+      <td class="m-total">${tot}</td>
+    </tr>`;
+  }).join('');
+
+  const totCats = cats.map(c => `<td class="m-total">${contar('TODOS', c)}</td>`).join('');
+
+  const listaHtml = ocsVisiveis.length
+    ? `<div class="sub-list">${ocsVisiveis.map(o => renderOcorrenciaCard(o)).join('')}</div>`
+    : `<div class="vazio">Nenhuma ocorrência corresponde aos filtros atuais.<div class="vazio-actions"><button type="button" class="btn-sec" id="limparFiltros">Limpar filtros</button></div></div>`;
+
+  return `<div class="card">
+    <h2>Matriz clicável: Problema × Destino</h2>
+    <p class="sub muted">Intensidade de cor proporcional ao volume. Clique em qualquer célula, linha ou coluna para filtrar as ocorrências abaixo.</p>
+    <div class="matriz-wrap">
+      <table class="matriz">
+        <thead>
+          <tr>
+            <th>Problema</th>
+            ${cats.map(c => {
+              const selCol = st.categoria === c && st.problema === 'TODOS';
+              return `<th class="m-head-btn ${selCol ? 'sel' : ''}" role="button" tabindex="0" aria-pressed="${selCol}" data-matriz-p="TODOS" data-matriz-c="${c}"><span class="dot" style="background:${CAT_INFO[c].cor};margin-right:6px;vertical-align:middle"></span>${esc(CAT_INFO[c].nome)}</th>`;
+            }).join('')}
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${linhasMatriz}
+          <tr>
+            <td class="m-total">Total</td>
+            ${totCats}
+            <td class="m-total">${baseMatriz.length}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Ocorrências registradas (${ocsVisiveis.length} de ${D.ocorrencias.length})</h2>
+    <p class="sub muted">Visualização direta de <span class="mono">Antes → Depois</span> com origem exata e motivo completo.</p>
+    ${listaHtml}
+  </div>`;
+}
+
+function renderAbaPagamentos(pagsVisiveis, processosVisiveis) {
+  const baseDest = D.pagamentos.filter(p => pagPassaFiltros(p, {ignorarDestinoPag: true}));
+  const destinos = ['mantido', 'substituido', 'deduplicado', 'descartado'];
+  const chipsDest = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.destinoPagamento === 'TODOS'}" data-dest-pag="TODOS">Todos<span class="n">${baseDest.length}</span></button>`,
+    ...destinos.map(d => {
+      const n = baseDest.filter(p => p.destino === d).length;
+      const info = DEST_PAG_INFO[d];
+      const dot = info.neutro ? '' : `<span class="dot" style="background:${info.cor}"></span>`;
+      const corChip = info.neutro ? 'var(--foreground)' : info.cor;
+      return `<button type="button" class="chip" style="--c:${corChip}" aria-pressed="${st.destinoPagamento === d}" data-dest-pag="${d}">${dot}${esc(info.nome)}<span class="n">${n}</span></button>`;
+    })
+  ].join('');
+
+  let vazioHtml = '<div class="vazio">Nenhum evento de pagamento corresponde aos filtros atuais.<div class="vazio-actions"><button type="button" class="btn-sec" id="limparFiltros">Limpar filtros</button></div></div>';
+  if (st.entidade !== 'TODAS' && st.entidade !== 'pagamento') {
+    const rotEnt = ENT_INFO[st.entidade]?.nome || st.entidade;
+    const btnProc = processosVisiveis.length ? `<button type="button" class="btn-sec" data-aba="processos">Ver na aba Por processo (${processosVisiveis.length})</button>` : '';
+    vazioHtml = `<div class="vazio">Nenhum pagamento exibido porque o filtro <b>Entidade</b> está em <b>${esc(rotEnt)}</b>.<div class="vazio-actions">${btnProc}<button type="button" class="btn-sec" data-limpa="entidade">Remover filtro de Entidade</button></div></div>`;
+  }
+
+  return `<div class="card">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <h2>Rastreamento 1-para-1 de pagamentos.json (${pagsVisiveis.length} de ${D.pagamentos.length})</h2>
+        <p class="sub muted">Todos os itens lidos do arquivo na ordem original, com destino, vínculos clicáveis de retificação/duplicata e motivo.</p>
+      </div>
+      <div class="chips" role="group" aria-label="Destino do pagamento">${chipsDest}</div>
+    </div>
+    <div class="alerta">
+      <b>Atenção:</b> os valores refletem apenas os eventos presentes em <span class="mono">pagamentos.json</span> (janela móvel de 7 dias) e não representam o saldo histórico acumulado no banco de dados.
+    </div>
+    <div class="sub-list">
+      ${pagsVisiveis.length ? pagsVisiveis.map(p => renderPagamentoCard(p)).join('') : vazioHtml}
+    </div>
+  </div>`;
+}
+
+function renderAbaPremissas() {
+  const q = norm(st.busca.trim());
+  const premissasFiltradas = q
+    ? D.premissas.filter(pr =>
+        [pr.titulo, pr.descricao, pr.confirmar_com, ...pr.afetados.flatMap(a => [a.identificador, a.chave_cnj, a.antes, a.depois])]
+          .some(v => norm(v).includes(q))
+      )
+    : D.premissas;
+
+  const premissasHtml = premissasFiltradas.length
+    ? premissasFiltradas.map(pr => {
+        const afetadosHtml = pr.afetados.length
+          ? pr.afetados.map(a => `<button type="button" class="afetado-btn" data-buscar="${esc(a.identificador)}" data-entidade="${esc(a.entidade || '')}" data-chave-afetado="${esc(a.chave_cnj || '')}" title="Inspecionar este registro">
+              <span class="mono"><b>${destacarHtml(a.identificador, q)}</b></span>
+              <span class="muted">${destacarHtml(a.antes || '—', q)} → ${destacarHtml(a.depois || '—', q)}</span>
+            </button>`).join('')
+          : '<span class="muted">Nenhuma ocorrência afetada neste lote.</span>';
+        return `<div class="premissa-card">
+          <div class="premissa-top">
+            <div class="premissa-titulo">${destacarHtml(pr.titulo, q)}</div>
+            <span class="tag-premissa">Confirmar com: ${destacarHtml(pr.confirmar_com, q)}</span>
+          </div>
+          <div>${destacarHtml(pr.descricao, q)}</div>
+          <div class="afetados"><span class="muted">Afetados neste lote:</span> ${afetadosHtml}</div>
+        </div>`;
+      }).join('')
+    : '<div class="vazio">Nenhuma premissa corresponde à busca atual.</div>';
+
+  const validacoesHtml = D.validacoes.length
+    ? D.validacoes.map(v => {
+        const cor = v.ok ? 'var(--success)' : 'var(--destructive)';
+        const det = v.detalhes.length ? v.detalhes.join('; ') : 'Conforme';
+        return `<div class="val-row">
+          <span class="tag" style="--c:${cor}">${v.ok ? 'OK' : 'FALHA'}</span>
+          <div><b>${esc(v.regra)}</b><div class="muted" style="font-size:12px">${esc(det)}</div></div>
+        </div>`;
+      }).join('')
+    : '<div class="vazio">Nenhuma regra de validação registrada.</div>';
+
+  const efeitoFiltrado = q
+    ? D.efeito_liquido.filter(e =>
+        [e.cnj, e.chave, e.efeito_liquido, ...e.eventos.flatMap(ev => [ev.evento_id, ev.tipo, ev.valor])]
+          .some(v => norm(v).includes(q))
+      )
+    : D.efeito_liquido;
+
+  const linhasEfeito = efeitoFiltrado.length
+    ? efeitoFiltrado.map(e => {
+        const evTxt = e.eventos.length
+          ? e.eventos.map(ev => `${ev.evento_id} (${ev.sinal}${fmtBRL(ev.valor)}${ev.tipo === 'estorno' ? ' estorno' : ''})`).join(', ')
+          : 'Sem eventos mantidos no lote';
+        return `<tr>
+          <td><button type="button" class="link-btn" data-ir-processo="${esc(e.chave)}">${destacarHtml(e.cnj, q)}</button></td>
+          <td class="mono">${destacarHtml(evTxt, q)}</td>
+          <td class="num mono"><b>${fmtBRL(e.efeito_liquido)}</b></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="3" class="vazio">Nenhum precatório corresponde à busca atual.</td></tr>';
+
+  return `<div class="card">
+    <h2>Premissas explícitas adotadas (${premissasFiltradas.length}${q ? ` de ${D.premissas.length}` : ''})</h2>
+    <p class="sub muted">Decisões documentadas sujeitas à confirmação antes de produção. Clique em um item afetado para inspecioná-lo.</p>
+    ${premissasHtml}
+  </div>
+  <div class="card">
+    <h2>Validação automática da base limpa ("Depois")</h2>
+    <p class="sub muted">${D.resumo.validacao.ok} de ${D.resumo.validacao.total} regras aprovadas sobre os arquivos gerados (${D.resumo.arquivos_gerados.map(a => `<span class="mono">${esc(a)}</span>`).join(', ')}).</p>
+    <div>${validacoesHtml}</div>
+  </div>
+  <div class="card">
+    <h2>Efeito líquido dos eventos deste arquivo por processo${q ? ` (${efeitoFiltrado.length} de ${D.efeito_liquido.length})` : ''}</h2>
+    <div class="alerta">
+      <b>Atenção:</b> representa apenas <span class="mono">pagamentos - estornos</span> de <span class="mono">pagamentos.json</span> (janela móvel de 7 dias), não o saldo histórico acumulado.
+    </div>
+    <div class="matriz-wrap">
+      <table class="tbl">
+        <thead><tr><th>CNJ formatado</th><th>Eventos mantidos no arquivo</th><th class="num">Efeito líquido</th></tr></thead>
+        <tbody>${linhasEfeito}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function renderKpiBar(segs, total) {
+  if (!total) return '<div class="kpi-bar" aria-hidden="true"></div>';
+  return `<div class="kpi-bar" aria-hidden="true">${segs.filter(s => s[0] > 0).map(([n, cor]) =>
+    `<span style="width:${(n / total) * 100}%;background:${cor}"></span>`
+  ).join('')}</div>`;
+}
+
+function render() {
+  const q = norm(st.busca.trim());
+  document.getElementById('btnLimparBusca').hidden = st.busca.length === 0;
+
+  const emPremissas = st.aba === 'premissas';
+  document.getElementById('grupoFiltrosOc').classList.toggle('filtro-escopo-dim', emPremissas);
+  document.getElementById('grupoEntidade').classList.toggle('filtro-escopo-dim', emPremissas);
+  document.getElementById('notaFiltroPremissas').hidden = !emPremissas;
+
+  const valOk = D.resumo.validacao.todas_ok;
+  document.getElementById('statusGeral').innerHTML =
+    `<div class="status-geral" style="--c:${valOk ? 'var(--success)' : 'var(--destructive)'}">${valOk ? '✓' : '✕'} Base limpa: ${D.resumo.validacao.ok}/${D.resumo.validacao.total} ${valOk ? 'OK' : 'FALHA'}</div>`;
+
+  const ocsVisiveis = D.ocorrencias.filter(o => ocPassaFiltros(o));
+  const pagsVisiveis = D.pagamentos.filter(p => pagPassaFiltros(p));
+  const processosVisiveis = D.precatorios.map(p => avaliarProcesso(p)).filter(Boolean);
+  const ocsSemProcesso = ocsVisiveis.filter(o => !o.chave_cnj);
+  const pagsSemProcesso = pagsVisiveis.filter(p => !p.chave_cnj);
+
+  const baseProb = D.ocorrencias.filter(o => ocPassaFiltros(o, {ignorarProblema: true}));
+  document.getElementById('chipsProblema').innerHTML = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.problema === 'TODOS'}" data-prob="TODOS">Todos<span class="n">${baseProb.length}</span></button>`,
+    ...['P1', 'P2', 'P3', 'P4'].map(p => {
+      const n = baseProb.filter(o => o.problema === p).length;
+      return `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.problema === p}" data-prob="${p}" title="${esc(PROB_INFO[p].desc)}"><span class="mono">${p}</span><span class="n">${n}</span></button>`;
+    })
+  ].join('');
+
+  const baseCat = D.ocorrencias.filter(o => ocPassaFiltros(o, {ignorarCategoria: true}));
+  document.getElementById('chipsCategoria').innerHTML = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.categoria === 'TODAS'}" data-cat="TODAS">Todos<span class="n">${baseCat.length}</span></button>`,
+    ...['corrigido', 'descartado', 'em_duvida'].map(c => {
+      const n = baseCat.filter(o => o.categoria === c).length;
+      return `<button type="button" class="chip" style="--c:${CAT_INFO[c].cor}" aria-pressed="${st.categoria === c}" data-cat="${c}"><span class="dot" style="background:${CAT_INFO[c].cor}"></span>${esc(CAT_INFO[c].nome)}<span class="n">${n}</span></button>`;
+    })
+  ].join('');
+
+  const basePrem = D.ocorrencias.filter(o => ocPassaFiltros(o, {ignorarPremissa: true}));
+  const nPrem = basePrem.filter(o => o.usa_premissa).length;
+  document.getElementById('chipsPremissa').innerHTML =
+    `<button type="button" class="chip" style="--c:var(--premissa)" aria-pressed="${st.soPremissa}" data-premissa="1"><span class="dot" style="background:var(--premissa)"></span>Com premissa<span class="n">${nPrem}</span></button>`;
+
+  const baseEnt = D.ocorrencias.filter(o => ocPassaFiltros(o, {ignorarEntidade: true}));
+  document.getElementById('chipsEntidade').innerHTML = [
+    `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.entidade === 'TODAS'}" data-ent="TODAS">Todas<span class="n">${baseEnt.length}</span></button>`,
+    ...['precatorio', 'pagamento', 'arquivo'].map(e => {
+      const n = baseEnt.filter(o => o.entidade === e).length;
+      return `<button type="button" class="chip" style="--c:var(--foreground)" aria-pressed="${st.entidade === e}" data-ent="${e}">${esc(ENT_INFO[e].nome)}<span class="n">${n}</span></button>`;
+    })
+  ].join('');
+
+  const pills = [];
+  if (st.filtrosAnteriores) {
+    pills.push(`<button type="button" class="btn-sec" id="btnVoltarFiltros">← Voltar aos filtros anteriores</button>`);
+  }
+  if (st.problema !== 'TODOS') pills.push(`<span class="pill">Problema: <b>${esc(st.problema)}</b><button type="button" data-limpa="problema" aria-label="Remover filtro de problema">✕</button></span>`);
+  if (st.categoria !== 'TODAS') pills.push(`<span class="pill">Destino: <b>${esc(CAT_INFO[st.categoria].nome)}</b><button type="button" data-limpa="categoria" aria-label="Remover filtro de destino">✕</button></span>`);
+  if (st.soPremissa) pills.push(`<span class="pill"><b>Somente com premissa</b><button type="button" data-limpa="premissa" aria-label="Remover filtro de premissa">✕</button></span>`);
+  if (st.entidade !== 'TODAS') pills.push(`<span class="pill">Entidade: <b>${esc(ENT_INFO[st.entidade].nome)}</b><button type="button" data-limpa="entidade" aria-label="Remover filtro de entidade">✕</button></span>`);
+  if (st.statusProcesso !== 'TODOS') {
+    const escopo = st.aba === 'processos' ? '' : ' <span class="muted">(aba Por processo)</span>';
+    pills.push(`<span class="pill">Status processo: <b>${st.statusProcesso === 'conciliado' ? 'Conciliado' : 'Em dúvida'}</b>${escopo}<button type="button" data-limpa="statusProcesso" aria-label="Remover filtro de status">✕</button></span>`);
+  }
+  if (st.destinoPagamento !== 'TODOS') {
+    const escopo = st.aba === 'pagamentos' ? '' : ' <span class="muted">(aba Pagamentos)</span>';
+    pills.push(`<span class="pill">Destino pagamento: <b>${esc(DEST_PAG_INFO[st.destinoPagamento].nome)}</b>${escopo}<button type="button" data-limpa="destinoPagamento" aria-label="Remover filtro de pagamento">✕</button></span>`);
+  }
+  if (q) pills.push(`<span class="pill">Busca: <b>${esc(st.busca.trim())}</b><button type="button" data-limpa="busca" aria-label="Limpar busca">✕</button></span>`);
+
+  const ativosEl = document.getElementById('filtrosAtivos');
+  if (pills.length) {
+    ativosEl.hidden = false;
+    const temReset = temAlgumFiltro();
+    ativosEl.innerHTML = `${pills.join('')}${temReset ? '<button type="button" class="btn-reset" id="limparFiltros">Limpar filtros</button>' : ''}`;
+  } else {
+    ativosEl.hidden = true;
+    ativosEl.innerHTML = '';
+  }
+
+  const r = D.resumo;
+  const precConc = processosVisiveis.filter(x => x.proc.status === 'conciliado').length;
+  const precDuv = processosVisiveis.length - precConc;
+  const pagMant = pagsVisiveis.filter(p => p.destino === 'mantido').length;
+  const pagSub = pagsVisiveis.filter(p => p.destino === 'substituido').length;
+  const pagDed = pagsVisiveis.filter(p => p.destino === 'deduplicado').length;
+  const pagDesc = pagsVisiveis.filter(p => p.destino === 'descartado').length;
+  const ocCorr = ocsVisiveis.filter(o => o.categoria === 'corrigido').length;
+  const ocDesc = ocsVisiveis.filter(o => o.categoria === 'descartado').length;
+  const ocDuv = ocsVisiveis.filter(o => o.categoria === 'em_duvida').length;
+  const ocPremVis = ocsVisiveis.filter(o => o.usa_premissa).length;
+
+  const kpiPrecVal = processosVisiveis.length === r.precatorios.total
+    ? `${r.precatorios.total}`
+    : `${processosVisiveis.length}<small> de ${r.precatorios.total}</small>`;
+  const kpiPagVal = pagsVisiveis.length === r.pagamentos.total
+    ? `${r.pagamentos.total}`
+    : `${pagsVisiveis.length}<small> de ${r.pagamentos.total}</small>`;
+  const kpiOcVal = ocsVisiveis.length === r.ocorrencias.total
+    ? `${r.ocorrencias.total}`
+    : `${ocsVisiveis.length}<small> de ${r.ocorrencias.total}</small>`;
+  const kpiPremVal = ocPremVis === r.ocorrencias.com_premissa
+    ? `${r.ocorrencias.com_premissa}<small> de ${r.ocorrencias.total}</small>`
+    : `${ocPremVis}<small> de ${r.ocorrencias.com_premissa}</small>`;
+
+  const kpisDef = [
+    {
+      aba: 'processos',
+      v: kpiPrecVal,
+      l: 'Precatórios',
+      d: `${precConc} conciliados · ${precDuv} em dúvida`,
+      c: 'var(--foreground)',
+      bar: renderKpiBar([[precConc, 'var(--success)'], [precDuv, 'var(--warning)']], processosVisiveis.length)
+    },
+    {
+      aba: 'pagamentos',
+      v: kpiPagVal,
+      l: 'Pagamentos (pagamentos.json)',
+      d: `${pagMant} mant. · ${pagSub} subst. · ${pagDed} dedup. · ${pagDesc} desc.`,
+      c: 'var(--foreground)',
+      bar: renderKpiBar([[pagMant, 'var(--success)'], [pagSub + pagDed, 'var(--neutral)'], [pagDesc, 'var(--destructive)']], pagsVisiveis.length)
+    },
+    {
+      aba: 'ocorrencias',
+      v: kpiOcVal,
+      l: 'Ocorrências',
+      d: `${ocCorr} corr. · ${ocDesc} desc. · ${ocDuv} em dúvida`,
+      c: 'var(--foreground)',
+      bar: renderKpiBar([[ocCorr, 'var(--info)'], [ocDesc, 'var(--destructive)'], [ocDuv, 'var(--warning)']], ocsVisiveis.length)
+    },
+    {
+      aba: 'premissas',
+      v: kpiPremVal,
+      l: 'Ocorrências com premissa',
+      d: `${plural(r.total_premissas, 'premissa a confirmar', 'premissas a confirmar')} no lote`,
+      c: 'var(--premissa)',
+      bar: renderKpiBar([[ocPremVis, 'var(--premissa)'], [Math.max(0, ocsVisiveis.length - ocPremVis), 'var(--border-strong)']], ocsVisiveis.length)
+    }
+  ];
+
+  document.getElementById('kpis').innerHTML = kpisDef.map(k =>
+    `<button type="button" class="card kpi kpi-click" data-kpi-aba="${k.aba}" title="Abrir aba ${esc(k.l)}"><div><div class="v" style="color:${k.c}">${k.v}</div><div class="l">${esc(k.l)}</div><div class="d">${esc(k.d)}</div></div>${k.bar}</button>`
+  ).join('');
+
+  const abasDef = [
+    {id: 'processos', nome: 'Por processo', cnt: `${processosVisiveis.length}`},
+    {id: 'ocorrencias', nome: 'Ocorrências (Antes → Depois)', cnt: `${ocsVisiveis.length}`},
+    {id: 'pagamentos', nome: 'Pagamentos (1-para-1)', cnt: `${pagsVisiveis.length}`},
+    {id: 'premissas', nome: 'Premissas & Validação', cnt: `${r.validacao.ok}/${r.validacao.total}`}
+  ];
+  document.getElementById('tabs').innerHTML = abasDef.map(a =>
+    `<button type="button" class="tab" role="tab" id="tab-${a.id}" aria-controls="conteudo" aria-selected="${st.aba === a.id}" tabindex="${st.aba === a.id ? '0' : '-1'}" data-aba="${a.id}">${esc(a.nome)}<span class="cnt">${esc(a.cnt)}</span></button>`
+  ).join('');
+
+  const conteudoEl = document.getElementById('conteudo');
+  conteudoEl.setAttribute('aria-labelledby', `tab-${st.aba}`);
+  let html = '';
+  if (st.aba === 'processos') html = renderAbaProcessos(processosVisiveis, ocsSemProcesso, pagsSemProcesso);
+  else if (st.aba === 'ocorrencias') html = renderAbaOcorrencias(ocsVisiveis);
+  else if (st.aba === 'pagamentos') html = renderAbaPagamentos(pagsVisiveis, processosVisiveis);
+  else html = renderAbaPremissas();
+  conteudoEl.innerHTML = html;
+
+  gravarHash();
+  const resumoAba = st.aba === 'processos'
+    ? plural(processosVisiveis.length, 'precatório exibido', 'precatórios exibidos')
+    : st.aba === 'ocorrencias'
+      ? plural(ocsVisiveis.length, 'ocorrência exibida', 'ocorrências exibidas')
+      : st.aba === 'pagamentos'
+        ? plural(pagsVisiveis.length, 'pagamento exibido', 'pagamentos exibidos')
+        : 'Premissas e validação';
+  document.getElementById('anuncio').textContent = `${resumoAba}.`;
+}
+
+function limparTodosFiltros({preservarVoltar = false} = {}) {
+  st.problema = 'TODOS';
+  st.categoria = 'TODAS';
+  st.entidade = 'TODAS';
+  st.soPremissa = false;
+  st.statusProcesso = 'TODOS';
+  st.destinoPagamento = 'TODOS';
+  st.busca = '';
+  st.fechadosNaBusca.clear();
+  if (!preservarVoltar) st.filtrosAnteriores = null;
+  document.getElementById('busca').value = '';
+}
+
+function abrirProcesso(chave) {
+  if (temAlgumFiltro() || st.aba !== 'processos') {
+    st.filtrosAnteriores = snapshotFiltros();
+  }
+  limparTodosFiltros({preservarVoltar: true});
+  st.aba = 'processos';
+  st.abertosUsuario.clear();
+  st.abertosUsuario.add(chave);
+  render();
+  const alvo = [...document.querySelectorAll('.dossie')].find(el => el.dataset.chave === chave);
+  if (alvo) alvo.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function abrirPagamento(indice) {
+  const existente = document.querySelector(`.pag-item[data-pag-idx="${CSS.escape(String(indice))}"]`);
+  if (existente && st.aba === 'pagamentos') {
+    existente.scrollIntoView({behavior: 'smooth', block: 'center'});
+    existente.classList.remove('flash');
+    void existente.offsetWidth;
+    existente.classList.add('flash');
+    setTimeout(() => existente.classList.remove('flash'), 1600);
+    return;
+  }
+  if (temAlgumFiltro() || st.aba !== 'pagamentos') {
+    st.filtrosAnteriores = snapshotFiltros();
+  }
+  limparTodosFiltros({preservarVoltar: true});
+  st.aba = 'pagamentos';
+  render();
+  const alvo = document.querySelector(`.pag-item[data-pag-idx="${CSS.escape(String(indice))}"]`);
+  if (alvo) {
+    alvo.scrollIntoView({behavior: 'smooth', block: 'center'});
+    alvo.classList.add('flash');
+    setTimeout(() => alvo.classList.remove('flash'), 1600);
+  }
+}
+
+function aplicarMatriz(p, c) {
+  st.filtrosAnteriores = null;
+  if (st.problema === p && st.categoria === c) {
+    st.problema = 'TODOS';
+    st.categoria = 'TODAS';
+  } else {
+    st.problema = p;
+    st.categoria = c;
+  }
+  preservarFoco(render);
+}
+
+function atualizarRotuloToggleTodos() {
+  const btn = document.getElementById('btnToggleTodos');
+  if (!btn) return;
+  const visiveis = [...document.querySelectorAll('.dossie')].map(el => el.dataset.chave).filter(Boolean);
+  const todosAbertos = visiveis.length > 0 && visiveis.every(k => processoEstaAberto(k));
+  btn.textContent = todosAbertos ? 'Recolher todos' : 'Expandir todos';
+}
+
+function copiarTexto(btn, texto) {
+  const confirmar = () => {
+    const prev = btn.textContent;
+    btn.textContent = 'Copiado';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = prev; btn.classList.remove('ok'); }, 1200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(confirmar).catch(() => {});
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); confirmar(); } catch {}
+    ta.remove();
+  }
+}
+
+document.addEventListener('click', e => {
+  const btnCopiar = e.target.closest('[data-copiar]');
+  if (btnCopiar) {
+    e.preventDefault();
+    e.stopPropagation();
+    copiarTexto(btnCopiar, btnCopiar.dataset.copiar);
+    return;
+  }
+
+  const sum = e.target.closest('.dossie > summary');
+  if (sum) {
+    const det = sum.parentElement;
+    const chave = det?.dataset?.chave;
+    if (chave) {
+      const vaiAbrir = !det.open;
+      if (st.busca.trim().length > 0) {
+        if (vaiAbrir) st.fechadosNaBusca.delete(chave);
+        else st.fechadosNaBusca.add(chave);
+      } else {
+        if (vaiAbrir) st.abertosUsuario.add(chave);
+        else st.abertosUsuario.delete(chave);
+      }
+      setTimeout(atualizarRotuloToggleTodos, 0);
+    }
+    return;
+  }
+
+  const voltar = e.target.closest('#btnVoltarFiltros');
+  if (voltar && st.filtrosAnteriores) {
+    const ant = st.filtrosAnteriores;
+    st.aba = ant.aba;
+    st.problema = ant.problema;
+    st.categoria = ant.categoria;
+    st.entidade = ant.entidade;
+    st.soPremissa = ant.soPremissa;
+    st.statusProcesso = ant.statusProcesso;
+    st.destinoPagamento = ant.destinoPagamento;
+    st.busca = ant.busca;
+    st.filtrosAnteriores = null;
+    document.getElementById('busca').value = st.busca;
+    render();
+    return;
+  }
+
+  const kpiBtn = e.target.closest('[data-kpi-aba]');
+  if (kpiBtn) { st.aba = kpiBtn.dataset.kpiAba; preservarFoco(render); return; }
+
+  const aba = e.target.closest('[data-aba]');
+  if (aba) { st.aba = aba.dataset.aba; preservarFoco(render); return; }
+
+  const prob = e.target.closest('[data-prob]');
+  if (prob) {
+    st.filtrosAnteriores = null;
+    const v = prob.dataset.prob;
+    st.problema = v === 'TODOS' ? 'TODOS' : (st.problema === v ? 'TODOS' : v);
+    preservarFoco(render);
+    return;
+  }
+
+  const cat = e.target.closest('[data-cat]');
+  if (cat) {
+    st.filtrosAnteriores = null;
+    const v = cat.dataset.cat;
+    st.categoria = v === 'TODAS' ? 'TODAS' : (st.categoria === v ? 'TODAS' : v);
+    preservarFoco(render);
+    return;
+  }
+
+  if (e.target.closest('[data-premissa]')) {
+    st.filtrosAnteriores = null;
+    st.soPremissa = !st.soPremissa;
+    preservarFoco(render);
+    return;
+  }
+
+  const ent = e.target.closest('[data-ent]');
+  if (ent) {
+    st.filtrosAnteriores = null;
+    const v = ent.dataset.ent;
+    st.entidade = v === 'TODAS' ? 'TODAS' : (st.entidade === v ? 'TODAS' : v);
+    preservarFoco(render);
+    return;
+  }
+
+  const sp = e.target.closest('[data-status-proc]');
+  if (sp) {
+    const v = sp.dataset.statusProc;
+    st.statusProcesso = v === 'TODOS' ? 'TODOS' : (st.statusProcesso === v ? 'TODOS' : v);
+    preservarFoco(render);
+    return;
+  }
+
+  const dp = e.target.closest('[data-dest-pag]');
+  if (dp) {
+    const v = dp.dataset.destPag;
+    st.destinoPagamento = v === 'TODOS' ? 'TODOS' : (st.destinoPagamento === v ? 'TODOS' : v);
+    preservarFoco(render);
+    return;
+  }
+
+  const mat = e.target.closest('[data-matriz-p]');
+  if (mat) { aplicarMatriz(mat.dataset.matrizP, mat.dataset.matrizC); return; }
+
+  const irProc = e.target.closest('[data-ir-processo]');
+  if (irProc) { abrirProcesso(irProc.dataset.irProcesso); return; }
+
+  const irPag = e.target.closest('[data-ir-pagamento]');
+  if (irPag) { abrirPagamento(irPag.dataset.irPagamento); return; }
+
+  const buscar = e.target.closest('[data-buscar]');
+  if (buscar) {
+    const entAlvo = buscar.dataset.entidade;
+    const chaveAlvo = buscar.dataset.chaveAfetado;
+    if (entAlvo === 'precatorio' && chaveAlvo) {
+      abrirProcesso(chaveAlvo);
+      return;
+    }
+    st.filtrosAnteriores = snapshotFiltros();
+    limparTodosFiltros({preservarVoltar: true});
+    st.busca = buscar.dataset.buscar;
+    document.getElementById('busca').value = st.busca;
+    st.aba = entAlvo === 'pagamento' ? 'pagamentos' : (entAlvo === 'arquivo' ? 'ocorrencias' : 'processos');
+    render();
+    return;
+  }
+
+  if (e.target.closest('#btnToggleTodos')) {
+    const visiveis = D.precatorios.map(p => avaliarProcesso(p)).filter(Boolean).map(x => x.proc.chave);
+    const todosAbertos = visiveis.every(k => processoEstaAberto(k));
+    if (st.busca.trim().length > 0) {
+      if (todosAbertos) visiveis.forEach(k => st.fechadosNaBusca.add(k));
+      else visiveis.forEach(k => st.fechadosNaBusca.delete(k));
+    } else {
+      if (todosAbertos) visiveis.forEach(k => st.abertosUsuario.delete(k));
+      else visiveis.forEach(k => st.abertosUsuario.add(k));
+    }
+    preservarFoco(render);
+    return;
+  }
+
+  const limpa = e.target.closest('[data-limpa]');
+  if (limpa) {
+    const alvo = limpa.dataset.limpa;
+    if (alvo === 'problema') st.problema = 'TODOS';
+    else if (alvo === 'categoria') st.categoria = 'TODAS';
+    else if (alvo === 'premissa') st.soPremissa = false;
+    else if (alvo === 'entidade') st.entidade = 'TODAS';
+    else if (alvo === 'statusProcesso') st.statusProcesso = 'TODOS';
+    else if (alvo === 'destinoPagamento') st.destinoPagamento = 'TODOS';
+    else if (alvo === 'busca') {
+      st.busca = '';
+      st.fechadosNaBusca.clear();
+      document.getElementById('busca').value = '';
+    }
+    preservarFoco(render);
+    return;
+  }
+
+  if (e.target.closest('#limparFiltros')) { limparTodosFiltros(); preservarFoco(render); return; }
+
+  if (e.target.closest('#btnLimparBusca')) {
+    st.busca = '';
+    st.fechadosNaBusca.clear();
+    const input = document.getElementById('busca');
+    input.value = '';
+    input.focus();
+    render();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  const inputBusca = document.getElementById('busca');
+  if (e.key === '/' && document.activeElement !== inputBusca && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    inputBusca.focus();
+    inputBusca.select();
+    return;
+  }
+  if (e.key === 'Escape' && document.activeElement === inputBusca && st.busca) {
+    e.preventDefault();
+    st.busca = '';
+    st.fechadosNaBusca.clear();
+    inputBusca.value = '';
+    render();
+    return;
+  }
+
+  const tab = e.target.closest('[role="tab"]');
+  if (tab && ['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) {
+    e.preventDefault();
+    const ordem = ['processos','ocorrencias','pagamentos','premissas'];
+    const i = ordem.indexOf(st.aba);
+    let prox = i;
+    if (e.key === 'ArrowRight') prox = (i + 1) % ordem.length;
+    else if (e.key === 'ArrowLeft') prox = (i - 1 + ordem.length) % ordem.length;
+    else if (e.key === 'Home') prox = 0;
+    else if (e.key === 'End') prox = ordem.length - 1;
+    st.aba = ordem[prox];
+    render();
+    document.getElementById(`tab-${st.aba}`)?.focus();
+    return;
+  }
+
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const mat = e.target.closest('[data-matriz-p]');
+  if (mat) { e.preventDefault(); aplicarMatriz(mat.dataset.matrizP, mat.dataset.matrizC); }
+});
+
+document.getElementById('busca').addEventListener('input', e => {
+  st.filtrosAnteriores = null;
+  st.busca = e.target.value;
+  st.fechadosNaBusca.clear();
+  render();
+});
+
+window.addEventListener('hashchange', () => { lerHash(); render(); });
+
+lerHash();
+render();
+</script></body></html>

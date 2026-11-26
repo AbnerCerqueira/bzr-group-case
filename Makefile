@@ -1,4 +1,4 @@
-.PHONY: help sync audit audit-html clean-data lint format typecheck test check
+.PHONY: help sync audit audit-html clean-data clean-html lint format typecheck test check
 
 help:
 	@echo "Comandos disponíveis:"
@@ -6,6 +6,7 @@ help:
 	@echo "  make audit      - Executa a auditoria no terminal"
 	@echo "  make audit-html - Gera a visualização da auditoria em docs/auditoria.html"
 	@echo "  make clean-data - Executa o pipeline de limpeza e gera data/clean/"
+	@echo "  make clean-html - Executa a limpeza e gera o painel em docs/limpeza.html"
 	@echo "  make lint       - Verifica lint e formatação (ruff)"
 	@echo "  make format     - Formata e aplica correções automáticas (ruff)"
 	@echo "  make typecheck  - Verifica tipos estáticos (basedpyright)"
@@ -23,6 +24,9 @@ audit-html:
 
 clean-data:
 	uv run python -m bzr_group_case.limpeza
+
+clean-html:
+	uv run python -m bzr_group_case.limpeza --html
 
 lint:
 	uv run ruff check .
