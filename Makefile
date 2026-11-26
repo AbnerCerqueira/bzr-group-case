@@ -1,4 +1,4 @@
-.PHONY: help sync audit audit-html clean-data clean-html lint format typecheck test check
+.PHONY: help sync audit audit-html clean-data clean-html lint format typecheck test test-sql check
 
 help:
 	@echo "Comandos disponíveis:"
@@ -10,7 +10,8 @@ help:
 	@echo "  make lint       - Verifica lint e formatação (ruff)"
 	@echo "  make format     - Formata e aplica correções automáticas (ruff)"
 	@echo "  make typecheck  - Verifica tipos estáticos (basedpyright)"
-	@echo "  make test       - Executa os testes (pytest)"
+	@echo "  make test       - Executa os testes Python (pytest)"
+	@echo "  make test-sql   - Valida a migração SQL em PostgreSQL via Docker"
 	@echo "  make check      - Executa lint, typecheck e test"
 
 sync:
@@ -41,5 +42,8 @@ typecheck:
 
 test:
 	uv run pytest
+
+test-sql:
+	bash sql/tests/validar_migracao.sh
 
 check: lint typecheck test
