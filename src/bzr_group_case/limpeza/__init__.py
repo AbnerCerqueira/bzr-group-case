@@ -17,9 +17,13 @@ from bzr_group_case.limpeza.modelos import (
     CategoriaOcorrencia,
     DadosBrutos,
     EntidadeOcorrencia,
+    PrecatorioLimpo,
     ProblemaDiagnostico,
     RegistroOcorrencia,
+    ResultadoConciliacaoPrecatorios,
+    StatusConciliacao,
 )
+from bzr_group_case.limpeza.precatorios import conciliar_precatorios
 
 __all__ = [
     "CategoriaOcorrencia",
@@ -28,11 +32,15 @@ __all__ = [
     "DadosBrutos",
     "EntidadeOcorrencia",
     "FUSO_BRASILIA",
+    "PrecatorioLimpo",
     "ProblemaDiagnostico",
     "RegistroOcorrencia",
+    "ResultadoConciliacaoPrecatorios",
+    "StatusConciliacao",
     "calcular_prazo_constitucional",
     "carregar_dados_brutos",
     "chave_texto_normalizada",
+    "conciliar_precatorios",
     "converter_data_pagamento",
     "converter_instante_iso",
     "converter_valor_monetario",
