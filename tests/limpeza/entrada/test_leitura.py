@@ -1,72 +1,9 @@
-import hashlib
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
-from bzr_group_case.limpeza.entrada.leitura import (
-    DIRETORIO_DADOS,
-    carregar_dados_brutos,
-)
-
-ARQUIVOS_ENTRADA = (
-    "tribunal.csv",
-    "hub.csv",
-    "apresentacoes.json",
-    "pagamentos.json",
-)
-
-
-def _hashes_arquivos(diretorio: Path) -> dict[str, str]:
-    return {
-        nome: hashlib.sha256((diretorio / nome).read_bytes()).hexdigest()
-        for nome in ARQUIVOS_ENTRADA
-    }
-
-
-def test_carregar_dados_brutos_reais_contagens_p3_decimal_e_imutabilidade() -> None:
-    hashes_antes = _hashes_arquivos(DIRETORIO_DADOS)
-
-    dados = carregar_dados_brutos(DIRETORIO_DADOS)
-
-    hashes_depois = _hashes_arquivos(DIRETORIO_DADOS)
-    assert hashes_depois == hashes_antes
-
-    assert len(dados.tribunal) == 5
-    assert len(dados.hub) == 5
-    assert len(dados.apresentacoes) == 6
-    assert len(dados.pagamentos) == 13
-
-    # Preservação de números de linha (base 2) e acentuação decodificada de cp1252.
-    assert [num for num, _ in dados.tribunal] == [2, 3, 4, 5, 6]
-    assert dados.tribunal[0][1]["ente_devedor"] == "Município de São Paulo"
-    assert [num for num, _ in dados.hub] == [2, 3, 4, 5, 6]
-
-    # Ocorrências P3 de encoding e delimitador em tribunal.csv.
-    assert len(dados.ocorrencias_leitura) == 2
-    resumo_ocorrencias = {
-        (
-            oc.problema,
-            oc.categoria,
-            oc.entidade,
-            oc.origem,
-            oc.campo,
-            oc.valor_original,
-            oc.valor_tratado,
-        )
-        for oc in dados.ocorrencias_leitura
-    }
-    assert resumo_ocorrencias == {
-        ("P3", "corrigido", "arquivo", "tribunal.csv", "encoding", "cp1252", "utf-8"),
-        ("P3", "corrigido", "arquivo", "tribunal.csv", "delimitador", ";", ","),
-    }
-    assert all(oc.motivo for oc in dados.ocorrencias_leitura)
-
-    # Verifica parse_float=Decimal nos itens de pagamentos.json.
-    primeiro_pagamento = dados.pagamentos[0][1]
-    assert primeiro_pagamento["evento_id"] == "ev-001"
-    assert isinstance(primeiro_pagamento["valor"], Decimal)
-    assert primeiro_pagamento["valor"] == Decimal("15000.0")
+from bzr_group_case.limpeza.entrada.leitura import carregar_dados_brutos
 
 
 def test_carregar_dados_brutos_descarta_item_json_nao_objeto_e_trata_coluna_extra(

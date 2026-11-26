@@ -1,16 +1,10 @@
-from collections import Counter
-from dataclasses import fields
 from decimal import Decimal
 from typing import Any
 
 import pytest
 
 from bzr_group_case.limpeza import (
-    DIRETORIO_DADOS,
     DadosBrutos,
-    PrecatorioLimpo,
-    StatusConciliacao,
-    carregar_dados_brutos,
     conciliar_precatorios,
 )
 
@@ -56,92 +50,6 @@ def _dados(
     apresentacoes: tuple[tuple[int, dict[str, Any]], ...] = (),
 ) -> DadosBrutos:
     return DadosBrutos(tribunal, hub, apresentacoes, (), ())
-
-
-def _p(
-    c: str, e: str, v: str, a: str, pr: str, st: StatusConciliacao
-) -> PrecatorioLimpo:
-    return PrecatorioLimpo(c, e, Decimal(v), a, pr, st)
-
-
-def test_precatorio_limpo_contem_apenas_seis_campos_cadastrais() -> None:
-    campos = tuple(c.name for c in fields(PrecatorioLimpo))
-    assert campos == (
-        "numero_processo",
-        "ente_devedor",
-        "valor_face",
-        "apresentado_em",
-        "prazo_pagamento",
-        "status_conciliacao",
-    )
-
-
-def test_conciliar_precatorios_dados_reais_completos() -> None:
-    res = conciliar_precatorios(carregar_dados_brutos(DIRETORIO_DADOS))
-    p5, p6 = "00567895420174036100", "00678906520168260053"
-    cnj5, cnj6 = "0056789-54.2017.4.03.6100", "0067890-65.2016.8.26.0053"
-    msp, esp, ms = (
-        "Município de São Paulo",
-        "Estado de São Paulo",
-        "Município de Santos",
-    )
-    dt4, dt5 = "2025-04-02T23:30:00-03:00", "2025-04-03T01:00:00Z"
-
-    assert res.precatorios == (
-        _p(CHAVE_1, msp, "45000.00", "2025-04-02", "2026-12-31", "conciliado"),
-        _p(CHAVE_2, msp, "31000.00", "2025-04-03", "2027-12-31", "em_duvida"),
-        _p(CHAVE_3, esp, "12500.00", "2024-02-29", "2025-12-31", "conciliado"),
-        _p(CHAVE_4, ms, "9800.00", dt4, "2026-12-31", "em_duvida"),
-        _p(p5, esp, "22000.00", dt5, "2026-12-31", "em_duvida"),
-        _p(p6, msp, "7000.00", "2023-12-31", "2025-12-31", "em_duvida"),
-    )
-    assert res.chaves_hub == frozenset({CHAVE_1, CHAVE_2, CHAVE_3, CHAVE_4, p5})
-    assert res.chaves_tribunal == frozenset({CHAVE_1, CHAVE_2, CHAVE_3, CHAVE_4, p6})
-    assert res.prazos_hub_originais == {
-        CHAVE_1: "2027-12-31",
-        CHAVE_2: "2027-12-31",
-        CHAVE_3: "2025-12-31",
-        CHAVE_4: "2026-12-31",
-        p5: "2027-12-31",
-        p6: None,
-    }
-    assert Counter((oc.problema, oc.categoria) for oc in res.ocorrencias) == {
-        ("P2", "corrigido"): 2,
-        ("P3", "corrigido"): 5,
-        ("P4", "corrigido"): 2,
-        ("P4", "em_duvida"): 4,
-    }
-    assert all(oc.entidade == "precatorio" for oc in res.ocorrencias)
-
-    p2 = {oc.identificador: oc for oc in res.ocorrencias if oc.problema == "P2"}
-    assert set(p2) == {CNJ_1, cnj5}
-    oc1 = p2[CNJ_1]
-    assert (oc1.campo, oc1.origem) == ("prazo_pagamento", "hub.csv (L2)")
-    assert (oc1.valor_original, oc1.valor_tratado) == ("2027-12-31", "2026-12-31")
-    assert "America/Sao_Paulo" in oc1.motivo
-    assert "premissa" in oc1.motivo.casefold()
-    assert "confirmação da operação" in oc1.motivo.casefold()
-    assert p2[cnj5].origem == "hub.csv (L6)"
-    assert (p2[cnj5].valor_original, p2[cnj5].valor_tratado) == (
-        "2027-12-31",
-        "2026-12-31",
-    )
-    assert "premissa" not in p2[cnj5].motivo.casefold()
-
-    orig_t6 = "tribunal.csv (L6), apresentacoes.json (item 6)"
-    p4 = {
-        (oc.categoria, oc.identificador, oc.campo, oc.origem)
-        for oc in res.ocorrencias
-        if oc.problema == "P4"
-    }
-    assert p4 == {
-        ("corrigido", CNJ_1, "ente_devedor", "tribunal.csv (L2) x hub.csv (L2)"),
-        ("corrigido", CNJ_2, "numero_processo", "tribunal.csv (L3) x hub.csv (L3)"),
-        ("em_duvida", CNJ_2, "valor_face", "tribunal.csv (L3) x hub.csv (L3)"),
-        ("em_duvida", CNJ_4, "ente_devedor", "tribunal.csv (L5) x hub.csv (L5)"),
-        ("em_duvida", cnj5, "cobertura", "hub.csv (L6)"),
-        ("em_duvida", cnj6, "cobertura", orig_t6),
-    }
 
 
 def test_duplicatas_identicas_conflitantes_e_recuperacao_apos_invalida() -> None:

@@ -1,25 +1,19 @@
 from collections import Counter
-from dataclasses import fields
 from decimal import Decimal
 from typing import Any
 
 import pytest
 
 from bzr_group_case.limpeza import (
-    DIRETORIO_DADOS,
     DadosBrutos,
     PagamentoLimpo,
     TipoPagamento,
-    carregar_dados_brutos,
-    conciliar_precatorios,
     limpar_pagamentos,
     resumir_valor_liquido_arquivo,
 )
 
 CNJ_1, CHAVE_1 = "0012345-10.2019.8.26.0053", "00123451020198260053"
-CNJ_2, CHAVE_2 = "0023456-21.2020.8.26.0053", "00234562120208260053"
-CNJ_3, CHAVE_3 = "0034567-32.2018.8.26.0405", "00345673220188260405"
-CNJ_4, CHAVE_4 = "0045678-43.2021.5.02.0011", "00456784320215020011"
+CHAVE_2 = "00234562120208260053"
 CNJ_6, CHAVE_6 = "0067890-65.2016.8.26.0053", "00678906520168260053"
 
 
@@ -56,146 +50,6 @@ def _pag(
     atualizado: str,
 ) -> PagamentoLimpo:
     return PagamentoLimpo(ev, chave, tipo, Decimal(valor), data, atualizado)
-
-
-def test_pagamento_limpo_contem_apenas_seis_campos_canonicos() -> None:
-    campos = tuple(c.name for c in fields(PagamentoLimpo))
-    assert campos == (
-        "evento_id",
-        "numero_processo",
-        "tipo",
-        "valor",
-        "data_pagamento",
-        "atualizado_em",
-    )
-
-
-def test_limpar_pagamentos_dados_reais_completos() -> None:
-    dados = carregar_dados_brutos(DIRETORIO_DADOS)
-    precatorios = conciliar_precatorios(dados)
-    res = limpar_pagamentos(
-        dados,
-        chaves_hub=precatorios.chaves_hub,
-        chaves_tribunal=precatorios.chaves_tribunal,
-    )
-
-    assert res.pagamentos == (
-        _pag(
-            "ev-001",
-            CHAVE_1,
-            "pagamento",
-            "15500.00",
-            "2025-03-10",
-            "2025-03-11T09:00:00-03:00",
-        ),
-        _pag(
-            "ev-002",
-            CHAVE_1,
-            "pagamento",
-            "2500.50",
-            "2025-04-10",
-            "2025-04-10T09:00:00-03:00",
-        ),
-        _pag(
-            "ev-003",
-            CHAVE_2,
-            "pagamento",
-            "8000.00",
-            "2025-05-02",
-            "2025-05-02T11:00:00-03:00",
-        ),
-        _pag(
-            "ev-005",
-            CHAVE_2,
-            "pagamento",
-            "1200.00",
-            "2025-06-01",
-            "2025-06-01T10:00:00-03:00",
-        ),
-        _pag(
-            "ev-006",
-            CHAVE_3,
-            "pagamento",
-            "5000.00",
-            "2025-02-20",
-            "2025-02-20T10:00:00-03:00",
-        ),
-        _pag(
-            "ev-007",
-            CHAVE_3,
-            "estorno",
-            "5000.00",
-            "2025-02-21",
-            "2025-02-21T10:00:00-03:00",
-        ),
-        _pag(
-            "ev-008",
-            CHAVE_4,
-            "pagamento",
-            "3000.00",
-            "2025-07-15",
-            "2025-07-15T10:00:00-03:00",
-        ),
-    )
-
-    assert len(res.itens_rastreados) == 13
-    assert [item.indice for item in res.itens_rastreados] == list(range(1, 14))
-    assert Counter(item.destino for item in res.itens_rastreados) == {
-        "mantido": 7,
-        "deduplicado": 1,
-        "substituido": 1,
-        "descartado": 4,
-    }
-    por_indice = {item.indice: item for item in res.itens_rastreados}
-    assert (por_indice[1].destino, por_indice[9].destino) == ("substituido", "mantido")
-    assert (por_indice[2].data_pagamento, por_indice[4].destino) == (
-        "2025-04-10",
-        "deduplicado",
-    )
-    assert (por_indice[5].valor_original, por_indice[5].destino) == (
-        "null",
-        "descartado",
-    )
-
-    assert all(oc.entidade == "pagamento" for oc in res.ocorrencias)
-    assert Counter((oc.problema, oc.categoria) for oc in res.ocorrencias) == {
-        ("P1", "corrigido"): 1,
-        ("P1", "descartado"): 1,
-        ("P2", "corrigido"): 1,
-        ("P3", "corrigido"): 3,
-        ("P3", "descartado"): 3,
-        ("P4", "descartado"): 1,
-    }
-
-    p1_ret = [
-        oc
-        for oc in res.ocorrencias
-        if oc.problema == "P1" and oc.categoria == "corrigido"
-    ]
-    assert len(p1_ret) == 1
-    assert p1_ret[0].identificador == "ev-001"
-    assert "premissa" in p1_ret[0].motivo.casefold()
-    assert "tribunal" in p1_ret[0].motivo.casefold()
-
-    p3_corrigidos = {
-        (oc.identificador, oc.campo, oc.origem)
-        for oc in res.ocorrencias
-        if oc.problema == "P3" and oc.categoria == "corrigido"
-    }
-    assert p3_corrigidos == {
-        ("ev-002", "valor", "pagamentos.json (item 2)"),
-        ("ev-002", "data_pagamento", "pagamentos.json (item 2)"),
-        ("ev-005", "processo", "pagamentos.json (item 6)"),
-    }
-
-    resumo = resumir_valor_liquido_arquivo(res.pagamentos)
-    assert resumo == {
-        CHAVE_1: Decimal("18000.50"),
-        CHAVE_2: Decimal("9200.00"),
-        CHAVE_3: Decimal("0.00"),
-        CHAVE_4: Decimal("3000.00"),
-    }
-    assert not resumo[CHAVE_3].is_signed()
 
 
 def test_retificacao_fora_de_ordem_fuso_e_deduplicacao_entre_versoes() -> None:

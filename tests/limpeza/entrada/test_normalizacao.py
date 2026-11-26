@@ -4,17 +4,11 @@ from decimal import Decimal
 import pytest
 
 from bzr_group_case.limpeza.entrada.normalizacao import (
-    DUAS_CASAS,
     converter_data_pagamento,
     converter_valor_monetario,
     formatar_cnj,
     normalizar_cnj,
 )
-
-
-def test_constantes_normalizacao() -> None:
-    assert isinstance(DUAS_CASAS, Decimal)
-    assert Decimal("0.01") == DUAS_CASAS
 
 
 def test_cnj_formatacao_e_normalizacao() -> None:

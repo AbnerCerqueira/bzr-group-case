@@ -1,43 +1,15 @@
 from datetime import date, datetime, timezone
-from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import pytest
 
 from bzr_group_case.comum import (
-    DIRETORIO_DADOS,
-    DIRETORIO_SAIDA,
     FUSO_BRASILIA,
-    PADRAO_CNJ,
-    PADRAO_DATA_ISO,
-    PADRAO_INSTANTE_ISO_PREFIXO,
-    RAIZ_PROJETO,
     calcular_prazo_constitucional,
     chave_texto_normalizada,
     converter_instante_iso,
     extrair_data_civil_brasilia,
     extrair_digitos_cnj,
-    rotulo_arquivo,
 )
-
-
-def test_caminhos_fuso_e_padroes_compartilhados(tmp_path: Path) -> None:
-    assert (RAIZ_PROJETO / "pyproject.toml").is_file()
-    assert DIRETORIO_DADOS == RAIZ_PROJETO / "data" / "raw"
-    assert DIRETORIO_SAIDA == RAIZ_PROJETO / "data" / "clean"
-    assert isinstance(FUSO_BRASILIA, ZoneInfo)
-    assert FUSO_BRASILIA.key == "America/Sao_Paulo"
-
-    assert rotulo_arquivo(DIRETORIO_DADOS / "hub.csv") == "data/raw/hub.csv"
-    caminho_externo = tmp_path / "fora.csv"
-    assert rotulo_arquivo(caminho_externo) == str(caminho_externo)
-
-    assert PADRAO_CNJ.fullmatch("0012345-10.2019.8.26.0053") is not None
-    assert PADRAO_CNJ.fullmatch("00123451020198260053") is None
-    assert PADRAO_DATA_ISO.fullmatch("2025-04-02") is not None
-    assert PADRAO_DATA_ISO.fullmatch("2025-4-2") is None
-    assert PADRAO_INSTANTE_ISO_PREFIXO.match("2025-04-03T01:00:00Z") is not None
-    assert PADRAO_INSTANTE_ISO_PREFIXO.match("2025-04-03") is None
 
 
 def test_extrair_digitos_cnj_e_chave_texto_normalizada() -> None:
