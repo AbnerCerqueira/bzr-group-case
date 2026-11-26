@@ -180,9 +180,9 @@ Ao cruzar a lista do tribunal, o cadastro interno e o arquivo de apresentações
 3. **Impedir pagamentos duplicados e suportar retificações:** adicionar `atualizado_em` (sem `DEFAULT now()`, preenchido a partir do histórico antes de ativar `NOT NULL`) e trava de unicidade (`UNIQUE`) em `pagamento.evento_id`, permitindo atualizar um evento apenas quando chegar versão mais recente.
 4. **Acelerar e corrigir o cálculo de saldo:** criar índice na chave estrangeira `pagamento(precatorio_id)` e expor o total pago via consulta/view que soma pagamentos e subtrai estornos.
 5. **Criar tabela de quarentena (`pagamento_rejeitado`):** registrar todo evento recusado com o motivo e o dado original, evitando alertas duplicados enquanto o mesmo evento se repete na janela móvel de 7 dias.
-6. **Saneamento antes das travas em produção:** limpar e deduplicar os registros legados antes de ativar as novas restrições (`UNIQUE` e `CHECK`) em um banco já populado.
+6. **Saneamento antes das travas em produção:** limpar espaços e deduplicar cópias idênticas nos registros legados — barrando duplicatas divergentes para revisão humana — antes de ativar as novas restrições (`UNIQUE` e `CHECK`) em um banco já populado.
 
-*(O script SQL completo dessas alterações será adicionado em `data/clean/001_prevencao_integridade.sql`.)*
+*(O script SQL completo dessas alterações está em [001_prevencao_integridade.sql](../sql/migrations/001_prevencao_integridade.sql), com o porquê de cada decisão técnica e instruções de validação em [MIGRACAO_BANCO.md](./MIGRACAO_BANCO.md).)*
 
 ---
 

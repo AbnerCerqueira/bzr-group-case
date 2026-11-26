@@ -45,7 +45,7 @@ Com as evidências da auditoria em mãos, escrevi o [DIAGNOSTICO.md](./docs/DIAG
 
 - **Agrupamento por problema:** em vez de listar as 18 falhas técnicas soltas, consolidei os achados em 4 grandes problemas (`P1` a `P4`) ordenados do mais grave para o menos grave, deixando claro o impacto para o negócio e a cadeia de causa e consequência entre eles.
 - **Evidências sem atrapalhar a leitura:** cada problema traz a explicação em texto direto e mantém as referências exatas (arquivo, registro e linha) em blocos expansíveis, conectadas às validações reproduzíveis da auditoria.
-- **Ponte para a limpeza e prevenção:** a partir de cada problema levantado, já organizei o que precisa ser tratado na etapa de limpeza e o que mudar no processo operacional, no script de importação e no banco de dados (SQL) para evitar que os erros voltem.
+- **Ponte para a limpeza e prevenção:** a partir de cada problema levantado, já organizei o que precisa ser tratado na etapa de limpeza e o que mudar no processo operacional, no script de importação e no banco de dados (com a migração PostgreSQL implementada em [001_prevencao_integridade.sql](./sql/migrations/001_prevencao_integridade.sql)) para evitar que os erros voltem.
 - **Dúvidas antes de produção:** separei o que precisa ser confirmado com o tribunal e com a operação nos pontos em que os dados sozinhos não bastam para tomar uma decisão segura (como divergências de valor de face, ente devedor e eventos incompletos).
 
 ## Limpeza
@@ -55,6 +55,15 @@ A partir dos quatro problemas mapeados, estruturei o pipeline descrito por etapa
 - **Três destinos explícitos:** o pipeline corrige automaticamente o que é objetivo (formato, encoding, datas, chave CNJ, idempotência e prazo constitucional), marca divergências reais de cadastro como `em_duvida` sem chutar qual base prevalece em [precatorios_limpos.csv](./data/clean/precatorios_limpos.csv) e descarta eventos inválidos ou órfãos antes de gravar [pagamentos_limpos.csv](./data/clean/pagamentos_limpos.csv).
 - **Rastreabilidade 1-para-1 e premissas:** nenhum registro some em silêncio. Todo item de entrada aparece no [relatorio_limpeza.md](./data/clean/relatorio_limpeza.md) com seu destino e motivo, destacando as duas premissas adotadas que dependem de confirmação antes de produção.
 - **Validação automática do "Depois":** ao final, o pipeline relê os CSVs gravados no disco para confirmar os contratos de integridade e gera `docs/limpeza.html`, permitindo cruzar o resultado por processo, ocorrência ou problema (`P1` a `P4`).
+
+## Prevenção
+
+Limpar a base atual resolve o passado, mas não impede que os erros voltem na próxima carga. Além das mudanças propostas para o processo operacional e o script de importação no [DIAGNOSTICO.md](./docs/DIAGNOSTICO.md), implementei a migração PostgreSQL em [001_prevencao_integridade.sql](./sql/migrations/001_prevencao_integridade.sql):
+
+- **Cadastro protegido contra dados inconsistentes:** padroniza `numero_processo` em 20 dígitos puros, adiciona `apresentado_em` e `prazo_pagamento` com validação de consistência entre as datas e bloqueia `valor_face` zerado ou negativo.
+- **Reenvios, retificações e estornos tratados na origem:** garante unicidade em `evento_id`, exige `atualizado_em` para aceitar apenas retificações mais recentes e expõe `vw_precatorio_saldo` para calcular o saldo líquido a partir dos eventos em vez de depender de um contador manual.
+- **Fim do descarte silencioso:** eventos inválidos ou sem processo cadastrado passam a ir para `pagamento_rejeitado`, agrupando repetições da janela móvel de 7 dias para evitar alertas duplicados.
+- **Decisões explicadas e testadas:** o contexto do banco original e o porquê de cada escolha estão documentados em [MIGRACAO_BANCO.md](./docs/MIGRACAO_BANCO.md), e o script [validar_migracao.sh](./sql/tests/validar_migracao.sh) (`make test-sql`) valida a migração em PostgreSQL real via Docker, inclusive simulando um banco já populado com duplicatas idênticas e divergentes.
 
 ## Como usei IA neste projeto
 
@@ -73,11 +82,12 @@ Não li cada linha de código isoladamente. Adotei a mesma abordagem que funcion
 
 ## Como executar
 
-Requer **Python 3.10+** e [`uv`](https://docs.astral.sh/uv/) (sem dependências externas em runtime):
+Requer **Python 3.10+** e [`uv`](https://docs.astral.sh/uv/) (sem dependências externas em runtime). Para validar a migração SQL (`make test-sql`), é necessário também ter o **Docker** em execução:
 
 ```bash
 make sync        # instala ferramentas de dev (ruff, basedpyright, pytest)
 make audit       # auditoria no terminal (make audit-html gera docs/auditoria.html)
 make clean-data  # limpeza em data/clean/ (make clean-html gera docs/limpeza.html)
-make check       # lint + typecheck + testes
+make check       # lint + typecheck + testes Python
+make test-sql    # valida a migração SQL em PostgreSQL via Docker (postgres:16-alpine)
 ```
