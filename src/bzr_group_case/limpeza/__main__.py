@@ -2,15 +2,8 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from bzr_group_case.limpeza.entrada.leitura import DIRETORIO_DADOS, RAIZ_PROJETO
-from bzr_group_case.limpeza.pipeline import DIRETORIO_SAIDA, executar_limpeza
-
-
-def _rotulo_caminho(caminho: Path) -> str:
-    try:
-        return str(caminho.resolve().relative_to(RAIZ_PROJETO.resolve()))
-    except ValueError:
-        return str(caminho)
+from bzr_group_case.comum import DIRETORIO_DADOS, DIRETORIO_SAIDA, rotulo_arquivo
+from bzr_group_case.limpeza.pipeline import executar_limpeza
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -41,7 +34,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print("Arquivos gerados:")
     for arquivo in resultado.arquivos_gerados:
-        print(f"  - {_rotulo_caminho(arquivo)}")
+        print(f"  - {rotulo_arquivo(arquivo)}")
 
     print(
         f"Resumo: {len(resultado.precatorios.precatorios)} precatórios, "

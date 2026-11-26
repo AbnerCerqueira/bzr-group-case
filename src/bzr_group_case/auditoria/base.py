@@ -1,15 +1,27 @@
 import csv
 import io
 import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-RAIZ_PROJETO = Path(__file__).resolve().parents[3]
-DIRETORIO_DADOS = RAIZ_PROJETO / "data" / "raw"
+from bzr_group_case.comum import (
+    DIRETORIO_DADOS,
+    PADRAO_CNJ,
+    RAIZ_PROJETO,
+    rotulo_arquivo,
+)
 
-PADRAO_CNJ = re.compile(r"\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}", re.ASCII)
+__all__ = [
+    "DIRETORIO_DADOS",
+    "PADRAO_CNJ",
+    "RAIZ_PROJETO",
+    "ResultadoValidacao",
+    "carregar_eventos_json",
+    "identificador_evento",
+    "ler_csv_para_analise",
+    "rotulo_arquivo",
+]
 
 
 @dataclass(frozen=True)
@@ -24,19 +36,6 @@ class ResultadoValidacao:
     @property
     def ok(self) -> bool:
         return not self.evidencias
-
-
-def rotulo_arquivo(caminho: Path) -> str:
-    """Retorna o caminho relativo à raiz do projeto para exibição legível."""
-    try:
-        return caminho.resolve().relative_to(RAIZ_PROJETO).as_posix()
-    except ValueError:
-        return str(caminho)
-
-
-def somente_digitos(texto: str) -> str:
-    """Remove pontuação/espaços e mantém apenas dígitos ASCII (chave CNJ)."""
-    return "".join(c for c in texto if c.isascii() and c.isdigit())
 
 
 def identificador_evento(indice: int, evento: dict[str, Any]) -> str:

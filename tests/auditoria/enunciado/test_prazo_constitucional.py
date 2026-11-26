@@ -1,43 +1,9 @@
-from datetime import date
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
-import pytest
 
 from bzr_group_case.auditoria.enunciado.prazo_constitucional import (
-    FUSO_BRASILIA,
     ORIGEM_ENUNCIADO,
-    calcular_prazo_constitucional,
-    extrair_data_brasilia,
     validar_prazo_pagamento_hub,
 )
-
-
-def test_extrair_data_brasilia_dst_historico_e_invalidos() -> None:
-    # Em janeiro de 2018 havia horário de verão (UTC-2 em America/Sao_Paulo).
-    assert extrair_data_brasilia("2018-01-01T02:30:00Z") == date(2018, 1, 1)
-    assert extrair_data_brasilia("2018-01-01T01:30:00Z") == date(2017, 12, 31)
-
-    for entrada_invalida in ("", "   ", "2025-02-30", "2025-04-02Z"):
-        with pytest.raises(ValueError):
-            extrair_data_brasilia(entrada_invalida)
-
-
-def test_calcular_prazo_constitucional_fronteira_e_fuso() -> None:
-    assert isinstance(FUSO_BRASILIA, ZoneInfo)
-    assert FUSO_BRASILIA.key == "America/Sao_Paulo"
-    assert calcular_prazo_constitucional("2025-04-02") == "2026-12-31"
-    assert calcular_prazo_constitucional(" 2025-04-02 ") == "2026-12-31"
-    assert calcular_prazo_constitucional("2025-04-03") == "2027-12-31"
-    assert calcular_prazo_constitucional("2024-02-29") == "2025-12-31"
-    assert calcular_prazo_constitucional("2025-04-02T23:30:00-03:00") == "2026-12-31"
-    assert calcular_prazo_constitucional("2025-04-03T01:00:00Z") == "2026-12-31"
-    assert calcular_prazo_constitucional(" 2025-04-03T01:00:00z ") == "2026-12-31"
-    assert calcular_prazo_constitucional("2025-04-03T02:59:59Z") == "2026-12-31"
-    assert calcular_prazo_constitucional("2025-04-03T03:00:00Z") == "2027-12-31"
-    assert calcular_prazo_constitucional("2025-04-03T03:00:00z") == "2027-12-31"
-    assert calcular_prazo_constitucional("2025-04-03T04:00:00+02:00") == "2026-12-31"
-    assert calcular_prazo_constitucional("2025-04-02T12:00:00") == "2026-12-31"
 
 
 def test_validar_prazo_pagamento_hub_inclui_data_invalida(tmp_path: Path) -> None:

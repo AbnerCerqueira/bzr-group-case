@@ -4,9 +4,9 @@ from pathlib import Path
 from bzr_group_case.auditoria.base import (
     ResultadoValidacao,
     rotulo_arquivo,
-    somente_digitos,
 )
 from bzr_group_case.auditoria.conciliacao.cadastro import indexar_csv_por_processo
+from bzr_group_case.comum import extrair_digitos_cnj
 
 ORIGEM_CONCILIACAO_APRESENTACOES = (
     "Conciliação (data/raw/apresentacoes.json x data/raw/hub.csv)"
@@ -53,7 +53,7 @@ def validar_apresentacoes_contra_hub(
 
         processo = str(registro.get("processo") or "")
         apresentado_em = str(registro.get("apresentado_em") or "")
-        chave = somente_digitos(processo)
+        chave = extrair_digitos_cnj(processo)
         if chave:
             chaves_apresentacoes.add(chave)
 

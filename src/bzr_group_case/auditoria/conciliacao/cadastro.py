@@ -1,5 +1,4 @@
 import re
-import unicodedata
 from decimal import Decimal
 from pathlib import Path
 
@@ -7,23 +6,13 @@ from bzr_group_case.auditoria.base import (
     ResultadoValidacao,
     ler_csv_para_analise,
     rotulo_arquivo,
-    somente_digitos,
 )
+from bzr_group_case.comum import chave_texto_normalizada, extrair_digitos_cnj
 
 ORIGEM_CONCILIACAO_CADASTRO = "Conciliação (data/raw/tribunal.csv x data/raw/hub.csv)"
 
 PADRAO_MONETARIO_PONTO = re.compile(r"-?\d+(\.\d+)?", re.ASCII)
 PADRAO_MONETARIO_BR = re.compile(r"-?\d{1,3}(\.\d{3})*,\d+", re.ASCII)
-
-
-def _normalizar_texto(texto: str) -> str:
-    """Remove acentos e caixa para distinguir grafia de divergência de texto."""
-    sem_acentos = "".join(
-        caractere
-        for caractere in unicodedata.normalize("NFKD", texto)
-        if not unicodedata.combining(caractere)
-    )
-    return " ".join(sem_acentos.casefold().split())
 
 
 def _converter_valor_monetario(texto: str) -> Decimal | None:
@@ -43,7 +32,7 @@ def indexar_csv_por_processo(
     """Indexa linhas de um CSV pela chave CNJ normalizada (apenas dígitos)."""
     indice: dict[str, tuple[int, dict[str, str | None]]] = {}
     for num_linha, linha in ler_csv_para_analise(caminho):
-        chave = somente_digitos(linha.get(coluna_processo) or "")
+        chave = extrair_digitos_cnj(linha.get(coluna_processo) or "")
         if chave and chave not in indice:
             indice[chave] = (num_linha, linha)
     return indice
@@ -133,7 +122,9 @@ def validar_ente_devedor_entre_bases(
         if ente_t == ente_h:
             continue
 
-        mesmo_normalizado = _normalizar_texto(ente_t) == _normalizar_texto(ente_h)
+        mesmo_normalizado = chave_texto_normalizada(ente_t) == chave_texto_normalizada(
+            ente_h
+        )
         detalhe = (
             "mesmo texto sem acento/caixa"
             if mesmo_normalizado

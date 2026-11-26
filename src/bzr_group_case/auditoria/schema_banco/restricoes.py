@@ -7,8 +7,8 @@ from bzr_group_case.auditoria.base import (
     identificador_evento,
     ler_csv_para_analise,
     rotulo_arquivo,
-    somente_digitos,
 )
+from bzr_group_case.comum import extrair_digitos_cnj
 
 ORIGEM_SCHEMA = "data/raw/schema.sql"
 TIPOS_ACEITOS_BANCO = {"pagamento", "estorno"}
@@ -85,16 +85,16 @@ def validar_referencia_precatorio_no_hub(
 ) -> ResultadoValidacao:
     """Valida FK pagamento.precatorio_id REFERENCES precatorio(id) contra hub.csv."""
     chaves_hub = {
-        somente_digitos(linha.get("processo") or "")
+        extrair_digitos_cnj(linha.get("processo") or "")
         for _, linha in ler_csv_para_analise(caminho_hub)
-        if somente_digitos(linha.get("processo") or "")
+        if extrair_digitos_cnj(linha.get("processo") or "")
     }
     rotulo_hub = rotulo_arquivo(caminho_hub)
     evidencias: list[str] = []
 
     for indice, evento in carregar_eventos_json(caminho_pagamentos):
         processo = evento.get("processo")
-        chave = somente_digitos(processo) if isinstance(processo, str) else ""
+        chave = extrair_digitos_cnj(processo) if isinstance(processo, str) else ""
         if not chave or chave not in chaves_hub:
             ref = identificador_evento(indice, evento)
             evidencias.append(

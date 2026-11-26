@@ -1,36 +1,44 @@
 import re
-import unicodedata
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Any
-from zoneinfo import ZoneInfo
 
-FUSO_BRASILIA = ZoneInfo("America/Sao_Paulo")
+from bzr_group_case.comum import (
+    FUSO_BRASILIA,
+    PADRAO_CNJ,
+    PADRAO_DATA_ISO,
+    calcular_prazo_constitucional,
+    chave_texto_normalizada,
+    converter_instante_iso,
+    extrair_data_civil_brasilia,
+    extrair_digitos_cnj,
+)
+
 DUAS_CASAS = Decimal("0.01")
 
 _PADRAO_CNJ_DIGITOS = re.compile(r"^\d{20}$", re.ASCII)
-_PADRAO_CNJ_FORMATADO = re.compile(
-    r"^\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}$",
-    re.ASCII,
-)
 _PADRAO_DECIMAL_PONTO = re.compile(r"^-?\d+(?:\.\d{1,2})?$", re.ASCII)
 _PADRAO_DECIMAL_BR = re.compile(
     r"^-?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{1,2}$",
     re.ASCII,
 )
-_PADRAO_DATA_ISO = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$", re.ASCII)
 _PADRAO_DATA_BR = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$", re.ASCII)
-_PADRAO_INSTANTE_ISO_PREFIXO = re.compile(
-    r"^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}",
-    re.ASCII,
-)
 
-
-def extrair_digitos_cnj(texto: str) -> str:
-    """Extrai apenas dígitos ASCII de um número de processo."""
-    return "".join(
-        caractere for caractere in texto if caractere.isascii() and caractere.isdigit()
-    )
+__all__ = [
+    "DUAS_CASAS",
+    "FUSO_BRASILIA",
+    "PADRAO_CNJ",
+    "PADRAO_DATA_ISO",
+    "calcular_prazo_constitucional",
+    "chave_texto_normalizada",
+    "converter_data_pagamento",
+    "converter_instante_iso",
+    "converter_valor_monetario",
+    "extrair_data_civil_brasilia",
+    "extrair_digitos_cnj",
+    "formatar_cnj",
+    "normalizar_cnj",
+]
 
 
 def formatar_cnj(digitos: str) -> str:
@@ -52,19 +60,10 @@ def normalizar_cnj(texto: Any) -> tuple[str, str] | None:
     limpo = texto.strip()
     if _PADRAO_CNJ_DIGITOS.fullmatch(limpo):
         return limpo, formatar_cnj(limpo)
-    if _PADRAO_CNJ_FORMATADO.fullmatch(limpo):
+    if PADRAO_CNJ.fullmatch(limpo):
         digitos = extrair_digitos_cnj(limpo)
         return digitos, limpo
     return None
-
-
-def chave_texto_normalizada(texto: str) -> str:
-    """Remove acentos via NFKD, colapsa espaços e aplica casefold."""
-    decomposicao = unicodedata.normalize("NFKD", texto)
-    sem_acentos = "".join(
-        caractere for caractere in decomposicao if not unicodedata.combining(caractere)
-    )
-    return " ".join(sem_acentos.split()).casefold()
 
 
 def _quantizar_duas_casas_exato(numero: Decimal) -> Decimal | None:
@@ -147,15 +146,9 @@ def converter_data_pagamento(valor: Any) -> tuple[date | None, bool]:
 
     texto = valor.strip()
     tinha_espacos = texto != valor
-    casamento_iso = _PADRAO_DATA_ISO.fullmatch(texto)
-    if casamento_iso is not None:
-        ano, mes, dia = (
-            int(casamento_iso.group(1)),
-            int(casamento_iso.group(2)),
-            int(casamento_iso.group(3)),
-        )
+    if PADRAO_DATA_ISO.fullmatch(texto) is not None:
         try:
-            return date(ano, mes, dia), tinha_espacos
+            return date.fromisoformat(texto), tinha_espacos
         except ValueError:
             return None, False
 
@@ -172,52 +165,3 @@ def converter_data_pagamento(valor: Any) -> tuple[date | None, bool]:
             return None, False
 
     return None, False
-
-
-def converter_instante_iso(valor: Any) -> datetime | None:
-    """Converte data/hora ISO com hora obrigatória para datetime ciente de fuso.
-
-    Se a entrada vier sem fuso (naive), assume ``FUSO_BRASILIA`` no retorno.
-    """
-    if not isinstance(valor, str):
-        return None
-
-    texto = valor.strip()
-    if not texto or _PADRAO_INSTANTE_ISO_PREFIXO.match(texto) is None:
-        return None
-
-    if texto.endswith(("Z", "z")):
-        texto = f"{texto[:-1]}+00:00"
-
-    try:
-        instante = datetime.fromisoformat(texto)
-    except ValueError:
-        return None
-
-    if instante.tzinfo is None:
-        instante = instante.replace(tzinfo=FUSO_BRASILIA)
-    return instante
-
-
-def extrair_data_civil_brasilia(apresentado_em: str) -> date:
-    """Converte data ou data/hora ISO para a data civil no horário de Brasília."""
-    if not isinstance(apresentado_em, str):
-        raise ValueError(f"Data/hora de apresentação inválida: {apresentado_em!r}")
-
-    texto = apresentado_em.strip()
-    if _PADRAO_DATA_ISO.fullmatch(texto) is not None:
-        return date.fromisoformat(texto)
-
-    instante = converter_instante_iso(texto)
-    if instante is None:
-        raise ValueError(f"Data/hora de apresentação inválida: {apresentado_em!r}")
-
-    return instante.astimezone(FUSO_BRASILIA).date()
-
-
-def calcular_prazo_constitucional(apresentado_em: str) -> tuple[date, date]:
-    """Calcula (data_civil_brasilia, data_prazo) com corte inclusivo em 02/04."""
-    data_civil = extrair_data_civil_brasilia(apresentado_em)
-    ate_2_de_abril = (data_civil.month, data_civil.day) <= (4, 2)
-    ano_prazo = data_civil.year + 1 if ate_2_de_abril else data_civil.year + 2
-    return data_civil, date(ano_prazo, 12, 31)

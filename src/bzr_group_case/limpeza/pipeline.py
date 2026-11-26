@@ -1,10 +1,7 @@
 from pathlib import Path
 
-from bzr_group_case.limpeza.entrada.leitura import (
-    DIRETORIO_DADOS,
-    RAIZ_PROJETO,
-    carregar_dados_brutos,
-)
+from bzr_group_case.comum import DIRETORIO_DADOS, DIRETORIO_SAIDA
+from bzr_group_case.limpeza.entrada.leitura import carregar_dados_brutos
 from bzr_group_case.limpeza.modelos import ResultadoLimpeza
 from bzr_group_case.limpeza.pagamentos import (
     limpar_pagamentos,
@@ -22,7 +19,7 @@ from bzr_group_case.limpeza.saida import (
     validar_base_limpa,
 )
 
-DIRETORIO_SAIDA = RAIZ_PROJETO / "data" / "clean"
+__all__ = ["DIRETORIO_DADOS", "DIRETORIO_SAIDA", "executar_limpeza"]
 
 
 def executar_limpeza(

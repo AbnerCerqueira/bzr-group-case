@@ -6,7 +6,11 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from bzr_group_case.limpeza.entrada.normalizacao import calcular_prazo_constitucional
+from bzr_group_case.comum import (
+    PADRAO_DATA_ISO,
+    PADRAO_INSTANTE_ISO_PREFIXO,
+    calcular_prazo_constitucional,
+)
 from bzr_group_case.limpeza.modelos import (
     ResultadoConciliacaoPrecatorios,
     ResultadoLimpezaPagamentos,
@@ -21,8 +25,6 @@ from bzr_group_case.limpeza.saida.arquivos import (
 
 _PADRAO_CNJ_20 = re.compile(r"^\d{20}$", re.ASCII)
 _PADRAO_DECIMAL_2_CASAS = re.compile(r"^\d+\.\d{2}$", re.ASCII)
-_PADRAO_DATA_ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$", re.ASCII)
-_PADRAO_INSTANTE_PREFIXO = re.compile(r"^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}", re.ASCII)
 
 _STATUS_VALIDOS = frozenset({"conciliado", "em_duvida"})
 _TIPOS_VALIDOS = frozenset({"pagamento", "estorno"})
@@ -93,7 +95,7 @@ def _decimal_positivo_duas_casas(texto: str) -> bool:
 
 
 def _data_iso_valida(texto: str) -> bool:
-    if _PADRAO_DATA_ISO.fullmatch(texto) is None:
+    if PADRAO_DATA_ISO.fullmatch(texto) is None:
         return False
     try:
         date.fromisoformat(texto)
@@ -105,7 +107,7 @@ def _data_iso_valida(texto: str) -> bool:
 def _instante_iso_com_fuso_valido(texto: str) -> bool:
     if not texto or texto != texto.strip():
         return False
-    if _PADRAO_INSTANTE_PREFIXO.match(texto) is None:
+    if PADRAO_INSTANTE_ISO_PREFIXO.match(texto) is None:
         return False
     texto_iso = f"{texto[:-1]}+00:00" if texto.endswith(("Z", "z")) else texto
     try:

@@ -5,10 +5,10 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+from bzr_group_case.comum import DIRETORIO_DADOS
 from bzr_group_case.limpeza.modelos import DadosBrutos, RegistroOcorrencia
 
-RAIZ_PROJETO = Path(__file__).resolve().parents[4]
-DIRETORIO_DADOS = RAIZ_PROJETO / "data" / "raw"
+__all__ = ["DIRETORIO_DADOS", "carregar_dados_brutos"]
 
 
 def _rejeitar_constante_json(constante: str) -> Any:
