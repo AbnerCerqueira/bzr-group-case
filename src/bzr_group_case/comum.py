@@ -6,6 +6,8 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 RAIZ_PROJETO = Path(__file__).resolve().parents[2]
+CAMINHO_CSS_BASE_PAINEL = Path(__file__).with_name("painel_base.css")
+MARCADOR_CSS_BASE = "/*__BASE_CSS__*/"
 DIRETORIO_DADOS = RAIZ_PROJETO / "data" / "raw"
 DIRETORIO_SAIDA = RAIZ_PROJETO / "data" / "clean"
 FUSO_BRASILIA = ZoneInfo("America/Sao_Paulo")
@@ -21,17 +23,24 @@ __all__ = [
     "DIRETORIO_DADOS",
     "DIRETORIO_SAIDA",
     "FUSO_BRASILIA",
+    "MARCADOR_CSS_BASE",
     "PADRAO_CNJ",
     "PADRAO_DATA_ISO",
     "PADRAO_INSTANTE_ISO_PREFIXO",
     "RAIZ_PROJETO",
     "calcular_prazo_constitucional",
+    "carregar_css_base_painel",
     "chave_texto_normalizada",
     "converter_instante_iso",
     "extrair_data_civil_brasilia",
     "extrair_digitos_cnj",
     "rotulo_arquivo",
 ]
+
+
+def carregar_css_base_painel() -> str:
+    """Lê o CSS base compartilhado entre os painéis HTML autocontidos."""
+    return CAMINHO_CSS_BASE_PAINEL.read_text(encoding="utf-8").strip()
 
 
 def rotulo_arquivo(caminho: Path) -> str:
