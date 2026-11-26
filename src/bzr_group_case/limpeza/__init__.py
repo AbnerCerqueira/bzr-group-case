@@ -24,19 +24,23 @@ from bzr_group_case.limpeza.modelos import (
     RastreamentoPagamento,
     RegistroOcorrencia,
     ResultadoConciliacaoPrecatorios,
+    ResultadoLimpeza,
     ResultadoLimpezaPagamentos,
     StatusConciliacao,
     TipoPagamento,
+    VerificacaoSaida,
 )
 from bzr_group_case.limpeza.pagamentos import (
     limpar_pagamentos,
     resumir_valor_liquido_arquivo,
 )
+from bzr_group_case.limpeza.pipeline import DIRETORIO_SAIDA, executar_limpeza
 from bzr_group_case.limpeza.precatorios import conciliar_precatorios
 
 __all__ = [
     "CategoriaOcorrencia",
     "DIRETORIO_DADOS",
+    "DIRETORIO_SAIDA",
     "DUAS_CASAS",
     "DadosBrutos",
     "DestinoPagamento",
@@ -48,9 +52,11 @@ __all__ = [
     "RastreamentoPagamento",
     "RegistroOcorrencia",
     "ResultadoConciliacaoPrecatorios",
+    "ResultadoLimpeza",
     "ResultadoLimpezaPagamentos",
     "StatusConciliacao",
     "TipoPagamento",
+    "VerificacaoSaida",
     "calcular_prazo_constitucional",
     "carregar_dados_brutos",
     "chave_texto_normalizada",
@@ -58,6 +64,7 @@ __all__ = [
     "converter_data_pagamento",
     "converter_instante_iso",
     "converter_valor_monetario",
+    "executar_limpeza",
     "extrair_data_civil_brasilia",
     "extrair_digitos_cnj",
     "formatar_cnj",

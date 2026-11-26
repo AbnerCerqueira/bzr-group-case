@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
+from pathlib import Path
 from typing import Any, Literal
 
 ProblemaDiagnostico = Literal["P1", "P2", "P3", "P4"]
@@ -95,3 +96,28 @@ class ResultadoLimpezaPagamentos:
     pagamentos: tuple[PagamentoLimpo, ...]
     itens_rastreados: tuple[RastreamentoPagamento, ...]
     ocorrencias: tuple[RegistroOcorrencia, ...]
+
+
+@dataclass(frozen=True)
+class VerificacaoSaida:
+    """Resultado de uma regra de validação automática sobre os CSVs gerados."""
+
+    regra: str
+    ok: bool
+    detalhes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ResultadoLimpeza:
+    """Resultado completo do pipeline de limpeza, validação e geração de saída."""
+
+    precatorios: ResultadoConciliacaoPrecatorios
+    pagamentos: ResultadoLimpezaPagamentos
+    ocorrencias: tuple[RegistroOcorrencia, ...]
+    valor_liquido_arquivo: Mapping[str, Decimal]
+    verificacoes: tuple[VerificacaoSaida, ...]
+    arquivos_gerados: tuple[Path, ...]
+
+    @property
+    def todas_verificacoes_ok(self) -> bool:
+        return bool(self.verificacoes) and all(v.ok for v in self.verificacoes)
