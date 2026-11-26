@@ -4,7 +4,7 @@
 
 A operação identificou que os números do sistema interno não batem com os do tribunal — tanto nos saldos pagos quanto nos prazos de vencimento e no cadastro dos precatórios — mas ainda não sabe exatamente onde estão os erros nem o que os causa.
 
-Como não temos acesso ao código do script de importação em produção nem ao banco em execução, partimos dos **dados brutos** recebidos ([tribunal.csv](./data/raw/tribunal.csv), [hub.csv](./data/raw/hub.csv), [apresentacoes.json](./data/raw/apresentacoes.json) e [pagamentos.json](./data/raw/pagamentos.json)), da documentação de integração ([DOCUMENTACAO_TRIBUNAL.md](./docs/DOCUMENTACAO_TRIBUNAL.md)), do fluxo operacional descrito no [ENUNCIADO.md](./docs/ENUNCIADO.md) e da modelagem do banco ([schema.sql](./schema.sql)).
+Como não temos acesso ao código do script de importação em produção nem ao banco em execução, partimos dos **dados brutos** recebidos ([tribunal.csv](./data/raw/tribunal.csv), [hub.csv](./data/raw/hub.csv), [apresentacoes.json](./data/raw/apresentacoes.json) e [pagamentos.json](./data/raw/pagamentos.json)), da documentação de integração ([DOCUMENTACAO_TRIBUNAL.md](./docs/DOCUMENTACAO_TRIBUNAL.md)), do fluxo operacional descrito no [ENUNCIADO.md](./docs/ENUNCIADO.md) e da modelagem do banco ([schema.sql](./data/raw/schema.sql)).
 
 O objetivo está dividido em três entregas práticas:
 1. **Investigar e diagnosticar** onde e por que os números divergem, com evidências concretas e impacto no negócio.

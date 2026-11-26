@@ -10,7 +10,7 @@ from bzr_group_case.auditoria.base import (
     somente_digitos,
 )
 
-ORIGEM_SCHEMA = "schema.sql"
+ORIGEM_SCHEMA = "data/raw/schema.sql"
 TIPOS_ACEITOS_BANCO = {"pagamento", "estorno"}
 
 

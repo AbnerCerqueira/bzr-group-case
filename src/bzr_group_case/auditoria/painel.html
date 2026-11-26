@@ -137,7 +137,7 @@ const R = D.resultados;
 
 const CONTRATOS = [
   {id:'tribunal', nome:'Leiaute do tribunal', desc:'docs/DOCUMENTACAO_TRIBUNAL.md'},
-  {id:'schema', nome:'schema.sql', desc:'Restrições e chaves do banco'},
+  {id:'schema', nome:'data/raw/schema.sql', desc:'Restrições e chaves do banco'},
   {id:'enunciado', nome:'Regra do enunciado', desc:'Prazo constitucional (corte em 02/04)'},
   {id:'conciliacao', nome:'Conciliação entre bases', desc:'Divergências entre arquivos'}
 ];
@@ -160,7 +160,7 @@ const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
 
 function contratoDe(origem) {
   if (origem.startsWith('docs/DOCUMENTACAO_TRIBUNAL')) return CONTRATOS[0];
-  if (origem.startsWith('schema.sql')) return CONTRATOS[1];
+  if (origem.startsWith('data/raw/schema.sql') || origem.startsWith('schema.sql')) return CONTRATOS[1];
   if (origem.startsWith('docs/ENUNCIADO')) return CONTRATOS[2];
   if (origem.startsWith('Conciliação')) return CONTRATOS[3];
   return {id: origem, nome: origem, desc: ''};

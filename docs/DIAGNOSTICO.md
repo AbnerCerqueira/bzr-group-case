@@ -73,7 +73,7 @@ Para piorar, quando um evento não pode ser importado, o fluxo descrito apenas i
 - **[pagamentos.json (L34–41)](../data/raw/pagamentos.json#L34-L41) · `ev-004`:** valor veio nulo — no fluxo descrito, tende a ser ignorado em silêncio.
 - **[pagamentos.json (L82–105)](../data/raw/pagamentos.json#L82-L105) · `ev-009`, `ev-010`, `ev-011`:** valor negativo (`-200`), processo vazio e processo fora do hub — no fluxo descrito, tendem a ser descartados sem alerta.
 - **[tribunal.csv (L1–6)](../data/raw/tribunal.csv#L1-L6) · cabeçalho + 5 registros:** salvo pelo Excel em `cp1252` (Windows-1252) / `Latin-1` (acentos fora de UTF-8), com `;` no lugar de `,` e valores como `45.000,00`.
-- **[schema.sql (L11)](../schema.sql#L11) · `pagamento.evento_id`:** sem trava de unicidade (`UNIQUE`) e sem coluna `atualizado_em` para identificar retificações.
+- **[schema.sql (L11)](../data/raw/schema.sql#L11) · `pagamento.evento_id`:** sem trava de unicidade (`UNIQUE`) e sem coluna `atualizado_em` para identificar retificações.
 
 </details>
 
@@ -95,7 +95,7 @@ Duas regras essenciais da operação apresentam falhas ou desalinhamento:
 
 - **[ENUNCIADO.md (L16)](./ENUNCIADO.md#L16) · fluxo de importação:** descreve que o script *"soma cada valor ao total pago do processo no sistema"*, sem distinção de estorno.
 - **[pagamentos.json (L58–65)](../data/raw/pagamentos.json#L58-L65) · `ev-007`:** estorno de R$ 5.000 sobre o pagamento de R$ 5.000 em [L50–57](../data/raw/pagamentos.json#L50-L57); somar ambos gera R$ 10.000 em vez de R$ 0.
-- **[DOCUMENTACAO_TRIBUNAL.md (L15)](./DOCUMENTACAO_TRIBUNAL.md#L15) × [schema.sql (L12)](../schema.sql#L12) · campo `tipo`:** documentação afirma ser sempre `"pagamento"`, mas o banco já prevê `('pagamento', 'estorno')`.
+- **[DOCUMENTACAO_TRIBUNAL.md (L15)](./DOCUMENTACAO_TRIBUNAL.md#L15) × [schema.sql (L12)](../data/raw/schema.sql#L12) · campo `tipo`:** documentação afirma ser sempre `"pagamento"`, mas o banco já prevê `('pagamento', 'estorno')`.
 - **[hub.csv (L2)](../data/raw/hub.csv#L2) · `0012345-10.2019.8.26.0053`:** apresentado em `2025-04-02` (sem horário), ficou com prazo `2027-12-31` (correto: `2026-12-31`; contraste com [L5](../data/raw/hub.csv#L5), que com `-03:00` calculou certo).
 - **[hub.csv (L6)](../data/raw/hub.csv#L6) · `0056789-54.2017.4.03.6100`:** apresentado em `2025-04-03T01:00:00Z` (`02/04 22:00` em Brasília), ficou com prazo `2027-12-31` (correto: `2026-12-31`).
 
@@ -114,18 +114,18 @@ Os arquivos que chegam para a operação não respeitam o leiaute documentado pe
 <details>
 <summary>Ver evidências (7 ocorrências + 9 CNJs acima de 20 caracteres — arquivo, registro e linha)</summary>
 
-- **[schema.sql (L3)](../schema.sql#L3) · `precatorio.numero_processo`:** desalinhamento de contrato — definido como `CHAR(20)` sem normalização na carga, enquanto os arquivos e a documentação trazem o CNJ formatado com 25 caracteres (9 ocorrências nos arquivos de cadastro):
+- **[schema.sql (L3)](../data/raw/schema.sql#L3) · `precatorio.numero_processo`:** desalinhamento de contrato — definido como `CHAR(20)` sem normalização na carga, enquanto os arquivos e a documentação trazem o CNJ formatado com 25 caracteres (9 ocorrências nos arquivos de cadastro):
   - `0012345-10.2019.8.26.0053` em [tribunal.csv (L2)](../data/raw/tribunal.csv#L2) e [hub.csv (L2)](../data/raw/hub.csv#L2);
   - `0023456-21.2020.8.26.0053` em [tribunal.csv (L3)](../data/raw/tribunal.csv#L3);
   - `0034567-32.2018.8.26.0405` em [tribunal.csv (L4)](../data/raw/tribunal.csv#L4) e [hub.csv (L4)](../data/raw/hub.csv#L4);
   - `0045678-43.2021.5.02.0011` em [tribunal.csv (L5)](../data/raw/tribunal.csv#L5) e [hub.csv (L5)](../data/raw/hub.csv#L5);
   - `0067890-65.2016.8.26.0053` em [tribunal.csv (L6)](../data/raw/tribunal.csv#L6);
   - `0056789-54.2017.4.03.6100` em [hub.csv (L6)](../data/raw/hub.csv#L6).
-- **[schema.sql (L1–6)](../schema.sql#L1-L6) × [hub.csv (L1)](../data/raw/hub.csv#L1) · tabela `precatorio`:** não possui colunas `apresentado_em` e `prazo_pagamento`, embora o sistema calcule e exporte esses campos.
+- **[schema.sql (L1–6)](../data/raw/schema.sql#L1-L6) × [hub.csv (L1)](../data/raw/hub.csv#L1) · tabela `precatorio`:** não possui colunas `apresentado_em` e `prazo_pagamento`, embora o sistema calcule e exporte esses campos.
 - **[pagamentos.json (L10–17)](../data/raw/pagamentos.json#L10-L17) · `ev-002` (e [L26–33](../data/raw/pagamentos.json#L26-L33)):** valor veio como texto brasileiro (`"2.500,50"`) e data como `"10/04/2025"` em vez de `AAAA-MM-DD`.
 - **[pagamentos.json (L42–49)](../data/raw/pagamentos.json#L42-L49) · `ev-005`:** número do processo sem pontuação (`00234562120208260053`), diferente do padrão CNJ documentado.
 - **[pagamentos.json (L34–41)](../data/raw/pagamentos.json#L34-L41) e [L90–97](../data/raw/pagamentos.json#L90-L97) · `ev-004` e `ev-010`:** valor nulo (`ev-004`) e número de processo vazio (`ev-010`).
-- **[pagamentos.json (L82–89)](../data/raw/pagamentos.json#L82-L89) × [schema.sql (L13)](../schema.sql#L13) · `ev-009`:** valor `-200` marcado como `"pagamento"`, violando `CHECK (valor > 0)`.
+- **[pagamentos.json (L82–89)](../data/raw/pagamentos.json#L82-L89) × [schema.sql (L13)](../data/raw/schema.sql#L13) · `ev-009`:** valor `-200` marcado como `"pagamento"`, violando `CHECK (valor > 0)`.
 - **[DOCUMENTACAO_TRIBUNAL.md (L1–26)](./DOCUMENTACAO_TRIBUNAL.md#L1-L26) · Leiaute v2.1:** não documenta `apresentacoes.json`, retificações nem estornos.
 
 </details>
@@ -182,7 +182,7 @@ Ao cruzar a lista do tribunal, o cadastro interno e o arquivo de apresentações
 5. **Criar tabela de quarentena (`pagamento_rejeitado`):** registrar todo evento recusado com o motivo e o dado original, evitando alertas duplicados enquanto o mesmo evento se repete na janela móvel de 7 dias.
 6. **Saneamento antes das travas em produção:** limpar e deduplicar os registros legados antes de ativar as novas restrições (`UNIQUE` e `CHECK`) em um banco já populado.
 
-*(O script SQL completo dessas alterações será adicionado em `migrations/001_prevencao_integridade.sql`.)*
+*(O script SQL completo dessas alterações será adicionado em `data/clean/001_prevencao_integridade.sql`.)*
 
 ---
 
