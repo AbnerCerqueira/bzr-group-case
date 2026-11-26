@@ -40,6 +40,16 @@ def _celula(texto: str | None) -> str:
     return limpo.replace("|", "\\|")
 
 
+def _codigo_inline(texto: str | None) -> str:
+    """Formata um valor em código inline fora de tabela sem escapar '|'."""
+    if texto is None or texto == "":
+        return "—"
+    limpo = texto.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    if "`" in limpo:
+        return f"`` {limpo} ``"
+    return f"`{limpo}`"
+
+
 def _tabela(
     cabecalhos: Sequence[str],
     linhas: Sequence[Sequence[str]],
@@ -132,8 +142,29 @@ def _secao_resumo(
         )
     )
 
+    total_prec = len(precatorios.precatorios)
+    total_pag = len(pagamentos.itens_rastreados)
+    ancora_prec = f"#3-visão-1-para-1-dos-precatórios-{total_prec}-processos"
+    ancora_pag = (
+        "#4-visão-1-para-1-dos-eventos-de-pagamento-"
+        f"{total_pag}-itens-de-pagamentosjson"
+    )
+    ancora_liq = "#6-efeito-líquido-apenas-dos-eventos-deste-arquivo-por-processo"
     return [
         "# Relatório de Limpeza e Conciliação",
+        "",
+        "> Para filtrar e cruzar ocorrências por problema (`P1`–`P4`), destino, "
+        "processo ou evento, gere o painel interativo com `make clean-html` "
+        "(`docs/limpeza.html`).",
+        "",
+        "**Navegação rápida:** "
+        "[1. Resumo](#1-resumo-executivo) · "
+        "[2. Premissas](#2-premissas-explícitas-adotadas) · "
+        f"[3. Precatórios]({ancora_prec}) · "
+        f"[4. Pagamentos]({ancora_pag}) · "
+        "[5. Ocorrências](#5-detalhamento-das-ocorrências-por-destino) · "
+        f"[6. Efeito líquido]({ancora_liq}) · "
+        "[7. Validação](#7-validação-automática-da-base-limpa-depois)",
         "",
         "## 1. Resumo executivo",
         "",
@@ -146,19 +177,38 @@ def _secao_resumo(
     ]
 
 
-def _secao_premissas(ocorrencias: Sequence[RegistroOcorrencia]) -> list[str]:
-    prazos_sem_fuso = [
+def ocorrencia_usa_premissa(ocorrencia: RegistroOcorrencia) -> bool:
+    """Indica se a ocorrência depende de uma das premissas explícitas do lote."""
+    return ocorrencia.categoria == "corrigido" and (
+        (
+            ocorrencia.campo == "prazo_pagamento"
+            and "premissa" in ocorrencia.motivo.casefold()
+        )
+        or ocorrencia.campo == "retificacao"
+    )
+
+
+def coletar_premissas(
+    ocorrencias: Sequence[RegistroOcorrencia],
+) -> tuple[tuple[RegistroOcorrencia, ...], tuple[RegistroOcorrencia, ...]]:
+    """Separa ocorrências afetadas por cada premissa explícita do pipeline."""
+    prazos_sem_fuso = tuple(
         oc
         for oc in ocorrencias
         if oc.campo == "prazo_pagamento"
         and oc.categoria == "corrigido"
         and "premissa" in oc.motivo.casefold()
-    ]
-    retificacoes = [
+    )
+    retificacoes = tuple(
         oc
         for oc in ocorrencias
         if oc.campo == "retificacao" and oc.categoria == "corrigido"
-    ]
+    )
+    return prazos_sem_fuso, retificacoes
+
+
+def _secao_premissas(ocorrencias: Sequence[RegistroOcorrencia]) -> list[str]:
+    prazos_sem_fuso, retificacoes = coletar_premissas(ocorrencias)
 
     if prazos_sem_fuso:
         afetados_fuso = ", ".join(
@@ -199,23 +249,27 @@ def _secao_precatorios(precatorios: ResultadoConciliacaoPrecatorios) -> list[str
         por_cnj.setdefault(oc.identificador, []).append(oc)
 
     linhas: list[tuple[str, ...]] = []
+    detalhes: list[str] = []
     for p in precatorios.precatorios:
         cnj = formatar_cnj(p.numero_processo)
         ocs = por_cnj.get(cnj, [])
         problemas = ", ".join(sorted({oc.problema for oc in ocs})) or "—"
         prazo_antes = precatorios.prazos_hub_originais.get(p.numero_processo)
+        prazo_txt = _formatar_prazo_transicao(prazo_antes, p.prazo_pagamento)
         linhas.append(
             (
                 cnj,
-                p.numero_processo,
                 p.ente_devedor,
                 f"{p.valor_face:.2f}",
-                p.apresentado_em,
-                _formatar_prazo_transicao(prazo_antes, p.prazo_pagamento),
+                prazo_txt,
                 p.status_conciliacao,
                 problemas,
-                _resumo_ocorrencias_precatorio(ocs),
             )
+        )
+        detalhes.append(
+            f"- **`{cnj}`** (chave `{p.numero_processo}`) · {p.ente_devedor} · "
+            f"apresentado em `{p.apresentado_em or '—'}` · "
+            f"{_resumo_ocorrencias_precatorio(ocs)}"
         )
 
     total = len(precatorios.precatorios)
@@ -225,17 +279,23 @@ def _secao_precatorios(precatorios: ResultadoConciliacaoPrecatorios) -> list[str
         *_tabela(
             (
                 "CNJ formatado",
-                "Chave (20 dígitos)",
                 "Ente devedor",
                 "Valor de face",
-                "Apresentado em",
                 "Prazo (antes → depois)",
                 "Status",
-                "Problemas",
-                "Resumo",
+                "Problemas (cadastro)",
             ),
             linhas,
         ),
+        "",
+        "<details>",
+        "<summary>"
+        f"Ver chave canônica, apresentação e resumo por processo ({total})"
+        "</summary>",
+        "",
+        *detalhes,
+        "",
+        "</details>",
     ]
 
 
@@ -250,8 +310,14 @@ def _secao_pagamentos(pagamentos: ResultadoLimpezaPagamentos) -> list[str]:
             item.data_pagamento,
             item.destino,
             ", ".join(item.problemas) or "—",
-            item.motivo,
         )
+        for item in pagamentos.itens_rastreados
+    ]
+    motivos = [
+        f"- **#{item.indice} `{item.evento_id or f'item-{item.indice}'}`** "
+        f"({item.destino}"
+        + (f" · {', '.join(item.problemas)}" if item.problemas else "")
+        + f"): {item.motivo}"
         for item in pagamentos.itens_rastreados
     ]
     total = len(pagamentos.itens_rastreados)
@@ -269,25 +335,21 @@ def _secao_pagamentos(pagamentos: ResultadoLimpezaPagamentos) -> list[str]:
                 "Data",
                 "Destino",
                 "Problemas",
-                "Motivo",
             ),
             linhas,
         ),
+        "",
+        "<details>",
+        f"<summary>Ver motivos detalhados dos eventos ({total} itens)</summary>",
+        "",
+        *motivos,
+        "",
+        "</details>",
     ]
 
 
 def _secao_ocorrencias(ocorrencias: Sequence[RegistroOcorrencia]) -> list[str]:
     linhas_md = ["## 5. Detalhamento das ocorrências por destino", ""]
-    cabecalhos = (
-        "Problema",
-        "Entidade",
-        "Identificador",
-        "Origem",
-        "Campo",
-        "Antes",
-        "Depois",
-        "Motivo",
-    )
 
     for categoria, titulo in _CATEGORIAS:
         filtradas = [oc for oc in ocorrencias if oc.categoria == categoria]
@@ -297,21 +359,32 @@ def _secao_ocorrencias(ocorrencias: Sequence[RegistroOcorrencia]) -> list[str]:
             linhas_md.append("_Nenhuma ocorrência registrada._")
             linhas_md.append("")
             continue
-        linhas_tabela = [
+        itens_md = [
             (
-                oc.problema,
-                oc.entidade,
-                oc.identificador,
-                oc.origem,
-                oc.campo,
-                oc.valor_original,
-                oc.valor_tratado if oc.valor_tratado is not None else "—",
-                oc.motivo,
+                f"- **`[{oc.problema}]` `{oc.identificador}`** · "
+                f"`{oc.campo}` ({oc.entidade} · {oc.origem}): "
+                f"{_codigo_inline(oc.valor_original)} → "
+                f"{_codigo_inline(oc.valor_tratado)} — {oc.motivo}"
             )
             for oc in filtradas
         ]
-        linhas_md.extend(_tabela(cabecalhos, linhas_tabela))
-        linhas_md.append("")
+        if categoria == "corrigido":
+            linhas_md.extend(
+                [
+                    "<details>",
+                    "<summary>"
+                    f"Ver todas as {len(filtradas)} correções aplicadas"
+                    "</summary>",
+                    "",
+                    *itens_md,
+                    "",
+                    "</details>",
+                    "",
+                ]
+            )
+        else:
+            linhas_md.extend(itens_md)
+            linhas_md.append("")
 
     return linhas_md[:-1]
 
@@ -336,7 +409,6 @@ def _secao_valor_liquido(
         linhas.append(
             (
                 formatar_cnj(chave_cnj),
-                chave_cnj,
                 composicao or "—",
                 f"{total_liquido:.2f}",
             )
@@ -346,7 +418,6 @@ def _secao_valor_liquido(
         _tabela(
             (
                 "CNJ formatado",
-                "Chave (20 dígitos)",
                 "Eventos mantidos no arquivo",
                 "Efeito líquido no arquivo",
             ),
