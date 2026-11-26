@@ -16,10 +16,7 @@ O objetivo está dividido em três entregas práticas:
 
 Para visualizar o **Antes** e o **Depois** de forma interativa, o projeto gera dois painéis HTML integrados (`docs/auditoria.html` e `docs/limpeza.html`) com filtros combináveis e busca livre.
 
-<!-- TODO: Substituir o bloco abaixo pela URL do vídeo após subir pela interface web do GitHub
-     (ex.: https://github.com/user-attachments/assets/<id-do-video>) em uma linha própria. -->
-
-> **[Vídeo de demonstração]:** navegação pelos painéis de Auditoria (`Antes`) e Limpeza (`Depois`).
+https://github.com/user-attachments/assets/c09179c2-5233-4e49-8af4-3f4358f00c35
 
 ## Abordagem
 
